@@ -18,6 +18,13 @@ FLUSH PRIVILEGES;
 -- בחירת בסיס הנתונים
 USE fullstack7_db;
 
+DROP TABLE IF EXISTS bookings;          -- יש foreign keys לקליינטים ולסדנאות  
+DROP TABLE IF EXISTS workshops;         -- יש foreign key לספקים
+DROP TABLE IF EXISTS provider_passwords; -- יש foreign key לספקים
+DROP TABLE IF EXISTS client_passwords;   -- יש foreign key לקליינטים
+DROP TABLE IF EXISTS providers;         -- parent table
+DROP TABLE IF EXISTS clients;           -- parent table
+
 -- Clients table (workshop seekers)
 CREATE TABLE clients (
     id VARCHAR(50) PRIMARY KEY,
