@@ -18,6 +18,7 @@ FLUSH PRIVILEGES;
 -- בחירת בסיס הנתונים
 USE fullstack7_db;
 
+-- Clients table (workshop seekers)
 CREATE TABLE clients (
     id VARCHAR(50) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -31,7 +32,7 @@ CREATE TABLE clients (
 CREATE TABLE client_passwords (
     client_id VARCHAR(50) PRIMARY KEY,
     password_hash VARCHAR(255) NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(id)
+    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
 -- Providers table (workshop facilitators)
@@ -52,7 +53,7 @@ CREATE TABLE providers (
 CREATE TABLE provider_passwords (
     provider_id VARCHAR(50) PRIMARY KEY,
     password_hash VARCHAR(255) NOT NULL,
-    FOREIGN KEY (provider_id) REFERENCES providers(id)
+    FOREIGN KEY (provider_id) REFERENCES providers(id) ON DELETE CASCADE
 );
 
 -- Workshops table
@@ -70,7 +71,7 @@ CREATE TABLE workshops (
     workshop_date DATE NOT NULL,
     constraints_text TEXT,
     is_active BOOLEAN DEFAULT true,
-    FOREIGN KEY (provider_id) REFERENCES providers(id)
+    FOREIGN KEY (provider_id) REFERENCES providers(id) ON DELETE CASCADE
 );
 
 -- Bookings table
@@ -79,6 +80,6 @@ CREATE TABLE bookings (
     client_id VARCHAR(50) NOT NULL,
     workshop_id VARCHAR(50) NOT NULL,
     booking_date DATE NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(id),
-    FOREIGN KEY (workshop_id) REFERENCES workshops(id)
+    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+    FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
 );
