@@ -1,3 +1,23 @@
+CREATE DATABASE IF NOT EXISTS fullstack7_db;
+
+-- יצירת המשתמש עם סיסמה
+CREATE USER IF NOT EXISTS 'shahi'@'localhost' IDENTIFIED BY 'shahi1212!';
+CREATE USER IF NOT EXISTS 'shahi'@'%' IDENTIFIED BY 'shahi1212!';
+
+-- מתן הרשאות מלאות על בסיס הנתונים
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, INDEX
+ON fullstack7_db.*
+TO 'shahi'@'localhost';
+
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, INDEX
+ON fullstack7_db.*
+TO 'shahi'@'%';
+
+FLUSH PRIVILEGES;
+
+-- בחירת בסיס הנתונים
+USE fullstack7_db;
+
 CREATE TABLE clients (
     id VARCHAR(50) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
