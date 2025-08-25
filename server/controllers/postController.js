@@ -36,15 +36,15 @@ exports.getMyPosts = async (req, res) => {
 // יצירת פוסט חדש
 exports.createPost = async (req, res) => {
   const userId = req.user.id;
-  const { title, body, imageUrl } = req.body;
+  const { title, body, image_url } = req.body; // ✅ שינוי לשם DB
   const postId = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 
   try {
     await db.query(
-      'INSERT INTO posts (id, title, body, imageUrl, userId) VALUES (?, ?, ?, ?, ?)',
-      [postId, title, body, imageUrl || null, userId]
+      'INSERT INTO posts (id, title, body, image_url, userId) VALUES (?, ?, ?, ?, ?)',
+      [postId, title, body, image_url || null, userId] // ✅ שימוש ב־image_url
     );
-    res.status(201).json({ postId, title, body, imageUrl, userId });
+    res.status(201).json({ postId, title, body, image_url, userId });
   } catch (err) {
     console.error('Error in createPost:', err);
     res.status(500).json({ error: err.message });
@@ -55,7 +55,7 @@ exports.createPost = async (req, res) => {
 exports.updatePost = async (req, res) => {
   const userId = req.user.id;
   const { postId } = req.params;
-  const { title, body, imageUrl } = req.body;
+  const { title, body, image_url } = req.body; // ✅ שינוי לשם DB
 
   try {
     const [posts] = await db.query('SELECT * FROM posts WHERE id=?', [postId]);
@@ -67,8 +67,8 @@ exports.updatePost = async (req, res) => {
     }
 
     await db.query(
-      'UPDATE posts SET title=?, body=?, imageUrl=? WHERE id=?',
-      [title || post.title, body || post.body, imageUrl || post.imageUrl, postId]
+      'UPDATE posts SET title=?, body=?, image_url=? WHERE id=?',
+      [title || post.title, body || post.body, image_url || post.image_url, postId] // ✅ שימוש ב־image_url
     );
 
     res.json({ message: 'Post updated', postId });

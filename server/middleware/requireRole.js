@@ -12,6 +12,7 @@ const requireRole = (allowedRoles) => {
           error: 'לא מחובר - נדרש אימות' 
         });
       }
+      
 
       // בדיקה שיש role למשתמש
       if (!req.user.role) {
