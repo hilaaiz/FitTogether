@@ -18,75 +18,105 @@ FLUSH PRIVILEGES;
 -- בחירת בסיס הנתונים
 USE fullstack7_db;
 
-DROP TABLE IF EXISTS bookings;          -- יש foreign keys לקליינטים ולסדנאות  
-DROP TABLE IF EXISTS workshops;         -- יש foreign key לספקים
-DROP TABLE IF EXISTS provider_passwords; -- יש foreign key לספקים
-DROP TABLE IF EXISTS client_passwords;   -- יש foreign key לקליינטים
-DROP TABLE IF EXISTS providers;         -- parent table
-DROP TABLE IF EXISTS clients;           -- parent table
+-- מוחקים טבלאות ישנות בסדר הפוך לתלותים
+DROP TABLE IF EXISTS challenge_participants;
+DROP TABLE IF EXISTS todos;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS challenges;
+DROP TABLE IF EXISTS passwords;
+DROP TABLE IF EXISTS users;
 
--- Clients table (workshop seekers)
-CREATE TABLE clients (
-    id VARCHAR(50) PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    phone VARCHAR(20),
-    location VARCHAR(200)
+-- טבלת משתמשים
+CREATE TABLE users (
+    id VARCHAR(255) PRIMARY KEY,
+    name TEXT,
+    username TEXT,
+    email TEXT,
+    street TEXT,
+    suite TEXT,
+    city TEXT,
+    zipcode TEXT,
+    geo_lat TEXT,
+    geo_lng TEXT,
+    phone TEXT,
+    company_name TEXT,
+    catchPhrase TEXT,
+    bs TEXT,
+    role ENUM('user','coach') DEFAULT 'user',
+    height DECIMAL(5,2),  -- גובה
+    weight DECIMAL(5,2)   -- משקל
 );
 
--- Client passwords table
-CREATE TABLE client_passwords (
-    client_id VARCHAR(50) PRIMARY KEY,
-    password_hash VARCHAR(255) NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+-- טבלת סיסמאות
+CREATE TABLE passwords (
+    user_id VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Providers table (workshop facilitators)
-CREATE TABLE providers (
-    id VARCHAR(50) PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    phone VARCHAR(20),
-    business_name VARCHAR(200),
-    bio TEXT,
-    location VARCHAR(200),
-    average_rating DECIMAL(2,1) DEFAULT 0.0,
-    rating_count INT DEFAULT 0
+-- טבלת אתגרים (צריכה להיות לפני todos)
+CREATE TABLE challenges (
+    id VARCHAR(255) PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    goal INT NOT NULL,          -- כמות המשתתפים הדרושה
+    progress INT DEFAULT 0,     -- כמה כבר סיימו
+    deadline DATE,              -- דדליין
+    media_url TEXT,             -- תמונה/וידאו של האתגר
+    createdBy VARCHAR(255),     -- המאמן שיצר
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(createdBy) REFERENCES users(id)
+        ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- Provider passwords table
-CREATE TABLE provider_passwords (
-    provider_id VARCHAR(50) PRIMARY KEY,
-    password_hash VARCHAR(255) NOT NULL,
-    FOREIGN KEY (provider_id) REFERENCES providers(id) ON DELETE CASCADE
+-- טבלת משימות (todos) – עכשיו יכולה להפנות ל-challenges
+CREATE TABLE todos (
+    id VARCHAR(255) PRIMARY KEY,
+    userId VARCHAR(255),
+    title TEXT,
+    completed BOOLEAN DEFAULT FALSE,
+    challengeId VARCHAR(255) NULL,  -- אם המשימה שייכת לאתגר
+    FOREIGN KEY(userId) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(challengeId) REFERENCES challenges(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Workshops table
-CREATE TABLE workshops (
-    id VARCHAR(50) PRIMARY KEY,
-    provider_id VARCHAR(50) NOT NULL,
-    title VARCHAR(200) NOT NULL,
-    description TEXT NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    location VARCHAR(200) NOT NULL,
-    duration_hours INT NOT NULL,
-    max_participants INT NOT NULL,
-    registered_participants INT DEFAULT 0,
-    workshop_date DATE NOT NULL,
-    constraints_text TEXT,
-    is_active BOOLEAN DEFAULT true,
-    FOREIGN KEY (provider_id) REFERENCES providers(id) ON DELETE CASCADE
+-- טבלת פוסטים
+CREATE TABLE posts (
+    id VARCHAR(255) PRIMARY KEY,
+    userId VARCHAR(255),
+    title TEXT,
+    body TEXT,
+    image_url TEXT,  -- תמונה לפוסט
+    FOREIGN KEY(userId) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Bookings table
-CREATE TABLE bookings (
-    id VARCHAR(50) PRIMARY KEY,
-    client_id VARCHAR(50) NOT NULL,
-    workshop_id VARCHAR(50) NOT NULL,
-    booking_date DATE NOT NULL,
-    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
-    FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+-- טבלת תגובות
+CREATE TABLE comments (
+    id VARCHAR(255) PRIMARY KEY,
+    postId VARCHAR(255),
+    name TEXT,
+    email TEXT,
+    body TEXT,
+    userId VARCHAR(255),
+    FOREIGN KEY(postId) REFERENCES posts(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(userId) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- טבלת השתתפות באתגרים
+CREATE TABLE challenge_participants (
+    challengeId VARCHAR(255),
+    userId VARCHAR(255),
+    completed BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (challengeId, userId),
+    FOREIGN KEY(challengeId) REFERENCES challenges(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(userId) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
 );
