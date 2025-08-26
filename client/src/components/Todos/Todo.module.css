@@ -1,0 +1,472 @@
+/* ===== Filters Section ===== */
+.filtersSection {
+  margin-bottom: 2rem;
+}
+
+/* ===== Container and Background ===== */
+.todoContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background-attachment: fixed;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.backgroundElements { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  pointer-events: none; 
+  z-index: 0; 
+}
+.bgElement { 
+  position: absolute; 
+  border-radius: 50%; 
+  filter: blur(80px); 
+  opacity: 0.1; 
+  animation: float 6s ease-in-out infinite; 
+}
+.bgElement1 { 
+  top: 25%; left: 25%; width: 16rem; height: 16rem; 
+  background: linear-gradient(45deg, #e0e7ff, #ddd6fe); 
+  animation-delay: 0s; 
+}
+.bgElement2 { 
+  top: 75%; right: 25%; width: 24rem; height: 24rem; 
+  background: linear-gradient(45deg, #fef3c7, #fed7aa); 
+  animation-delay: 2s; 
+}
+.bgElement3 { 
+  top: 50%; left: 50%; width: 20rem; height: 20rem; 
+  background: linear-gradient(45deg, #d1fae5, #a7f3d0); 
+  animation-delay: 4s; 
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(120deg); }
+  66% { transform: translateY(10px) rotate(240deg); }
+}
+
+.content { 
+  position: relative; 
+  z-index: 1; 
+  max-width: 64rem; 
+  margin: 0 auto; 
+}
+
+/* ===== Header & Stats ===== */
+.header { 
+  text-align: center; 
+  margin-bottom: 2rem; 
+}
+.titleGroup { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 1rem; 
+  margin-bottom: 1rem; 
+}
+.iconWrapper { 
+  padding: 0.75rem; 
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+  border-radius: 1rem; 
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); 
+}
+.sparkleIcon { 
+  display: block; 
+  font-size: 2rem; 
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); 
+}
+.mainTitle { 
+  font-size: 28px; 
+  font-weight: 700; 
+  color: #111827; 
+  margin: 0; 
+  letter-spacing: -0.5px; 
+}
+
+.statsContainer { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 2rem; 
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(20px); 
+  border-radius: 1.5rem; 
+  padding: 1rem 1.5rem; 
+  border: 1px solid rgba(226, 232, 240, 0.8); 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+  margin-bottom: 1rem; 
+}
+.stat { text-align: center; }
+.statNumber { 
+  font-size: 2rem; 
+  font-weight: bold; 
+  color: #1f2937; 
+  margin-bottom: 0.25rem; 
+}
+.statLabel { 
+  font-size: 0.875rem; 
+  color: #6b7280; 
+}
+.statDivider { 
+  width: 1px; 
+  height: 3rem; 
+  background: rgba(107, 114, 128, 0.3); 
+}
+
+.progressBarContainer { 
+  width: 100%; 
+  max-width: 28rem; 
+  margin: 0 auto; 
+}
+.progressBar { 
+  height: 0.5rem; 
+  background: rgba(107, 114, 128, 0.2); 
+  border-radius: 0.25rem; 
+  overflow: hidden; 
+}
+.progressFill { 
+  height: 100%; 
+  background: linear-gradient(90deg, #6366f1, #8b5cf6); 
+  border-radius: 0.25rem; 
+  transition: width 1s ease-out; 
+}
+
+/* ===== Add Todo ===== */
+.addTodoSection { margin-bottom: 1rem; }
+.addTodoContainer { 
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(20px); 
+  border-radius: 1.5rem; 
+  padding: 0.5rem; 
+  border: 1px solid rgba(226, 232, 240, 0.8); 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+}
+.addTodoGroup { display: flex; gap: 1rem; }
+.addInput { 
+  flex: 1; 
+  padding: 1rem 1.5rem; 
+  background: rgba(255, 255, 255, 0.8); 
+  border: 1px solid rgba(209, 213, 219, 0.8); 
+  border-radius: 1rem; 
+  color: #374151; 
+  font-size: 1rem; 
+  outline: none; 
+  transition: all 0.3s ease; 
+}
+.addInput::placeholder { color: #9ca3af; }
+.addInput:focus { 
+  border-color: #6366f1; 
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); 
+  background: white; 
+}
+.addButton { 
+  padding: 1rem 2rem; 
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+  color: white; 
+  border: none; 
+  border-radius: 1rem; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  min-width: 60px; 
+}
+.addButton:hover:not(:disabled) { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); 
+}
+.addButton:disabled { opacity: 0.5; cursor: not-allowed; }
+.plusIcon { font-size: 1.5rem; font-weight: bold; }
+.loadingSpinner { 
+  width: 1.5rem; height: 1.5rem; 
+  border: 2px solid rgba(255, 255, 255, 0.3); 
+  border-top: 2px solid white; 
+  border-radius: 50%; 
+  animation: spin 1s linear infinite; 
+}
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+/* ===== Empty State ===== */
+.emptyState { text-align: center; padding: 4rem 2rem; }
+.emptyIcon { 
+  font-size: 6rem; margin-bottom: 1.5rem; 
+  filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3)); 
+}
+.emptyTitle { 
+  font-size: 1.5rem; color: #374151; margin-bottom: 1rem; font-weight: 600; 
+}
+.emptySubtitle { color: #6b7280; font-size: 1rem; }
+
+/* ===== Filters & Sort ===== */
+.filtersContainer { 
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(20px); 
+  border-radius: 1.5rem; 
+  padding: 0.6rem; 
+  border: 1px solid rgba(226, 232, 240, 0.8); 
+}
+.filterGroup { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+  gap: 1rem; 
+}
+.searchGroup, .selectGroup { 
+  position: relative; 
+  display: flex; 
+  align-items: center; 
+}
+.searchIcon, .filterIcon, .sortIcon { 
+  position: absolute; 
+  left: 1rem; 
+  z-index: 1; 
+  font-size: 1.1rem; 
+  color: #6b7280; 
+}
+.searchInput, .filterSelect, .sortSelect { 
+  width: 100%; 
+  padding: 0.75rem 1rem 0.75rem 2.8rem; 
+  background: rgba(255, 255, 255, 0.8); 
+  border: 1px solid rgba(209, 213, 219, 0.8); 
+  border-radius: 0.75rem; 
+  color: #374151; 
+  font-size: 0.9rem; 
+  outline: none; 
+  transition: all 0.3s ease; 
+  appearance: none; 
+  cursor: pointer; 
+}
+.searchInput::placeholder { color: #9ca3af; }
+.searchInput:focus, .filterSelect:focus, .sortSelect:focus { 
+  border-color: #6366f1; 
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); 
+  background: white; 
+}
+
+/* Custom select arrow */
+.filterSelect, .sortSelect {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* ===== Todo List ===== */
+.todoList { display: flex; flex-direction: column; gap: 1rem; }
+
+.todoItem { 
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(20px); 
+  border-radius: 1rem; 
+  padding: 0.5rem; 
+  border: 1px solid rgba(226, 232, 240, 0.8); 
+  transition: all 0.3s ease; 
+  animation: slideIn 0.5s ease-out forwards; 
+  opacity: 0; 
+  transform: translateY(20px); 
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
+}
+@keyframes slideIn { 
+  to { opacity: 1; transform: translateY(0); } 
+}
+.todoItem:hover { 
+  background: rgba(255, 255, 255, 0.95); 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); 
+}
+
+/* States on item */
+.completed .todoTitleDisplay { 
+  text-decoration: line-through; 
+  color: #9ca3af; 
+}
+.editing { 
+  outline: 2px dashed #c7d2fe; 
+  outline-offset: 2px; 
+}
+
+/* Item content */
+.todoContent { display: flex; align-items: center; gap: 1rem; }
+.todoLeft { display: flex; align-items: center; gap: 0.75rem; }
+.todoId { 
+  font-size: 0.8rem; 
+  color: #6b7280; 
+  font-family: monospace; 
+  background: rgba(243, 244, 246, 0.8); 
+  padding: 0.25rem 0.6rem; 
+  border-radius: 0.5rem; 
+  font-weight: 500; 
+}
+
+.checkButton { 
+  width: 1.5rem; height: 1.5rem; 
+  border-radius: 0.5rem; 
+  border: 2px solid #d1d5db; 
+  background: white; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: white; 
+  font-weight: bold; 
+}
+.checkButton:hover { 
+  border-color: #6366f1; 
+  background: rgba(99, 102, 241, 0.1); 
+}
+.checked { 
+  background: linear-gradient(135deg, #10b981, #059669); 
+  border-color: #10b981; 
+}
+.checkMark { font-size: 1rem; }
+
+.todoMiddle { flex: 1; }
+.todoTitleInput { 
+  width: 100%; 
+  background: transparent; 
+  color: #374151; 
+  font-size: 1.05rem; 
+  font-weight: 500; 
+  border: none; 
+  outline: none; 
+  transition: all 0.3s ease; 
+}
+.editingInput { 
+  background: rgba(243, 244, 246, 0.5); 
+  border-radius: 0.5rem; 
+  padding: 0.25rem 0.5rem; 
+}
+.todoTitleDisplay { 
+  font-size: 1.05rem; 
+  font-weight: 500; 
+}
+.completedTitle { 
+  text-decoration: line-through; 
+  color: #9ca3af; 
+}
+
+.todoActions { display: flex; align-items: center; gap: 0.25rem; }
+.editButton, .deleteButton, .saveButton, .cancelButton {
+  padding: 0.5rem; 
+  color: #4b5563; 
+  background: transparent; 
+  border: none; 
+  border-radius: 0.5rem; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  font-size: 1.1rem; 
+  font-weight: 600;
+}
+.editButton:hover { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+.deleteButton:hover { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.saveButton:hover { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.cancelButton:hover { background: rgba(107, 114, 128, 0.12); color: #374151; }
+
+/* ===== Error Banner ===== */
+.errorBanner {
+  margin: 0.5rem 0 1rem;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+}
+
+/* ===== Challenge Badge ===== */
+.challengeBadge {
+  margin-inline-start: 0.5rem;
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #10b981);
+  color: white;
+}
+
+/* ===== Weather Card (placeholder for future API) ===== */
+.weatherCard {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+  margin-bottom: 1rem;
+}
+.weatherHeader { 
+  display: flex; align-items: center; justify-content: space-between; 
+  margin-bottom: 0.75rem; 
+}
+.weatherTitle { font-weight: 700; color: #111827; }
+.weatherBadge { 
+  font-size: 0.75rem; 
+  padding: 0.15rem 0.5rem; 
+  background: #eef2ff; 
+  color: #3730a3; 
+  border: 1px solid #c7d2fe; 
+  border-radius: 0.5rem; 
+}
+.weatherControls { 
+  display: grid; 
+  grid-template-columns: 1.2fr 0.8fr auto; 
+  gap: 0.5rem; 
+}
+.weatherInput, .weatherSelect {
+  width: 100%; 
+  padding: 0.6rem 0.8rem; 
+  border: 1px solid rgba(209, 213, 219, 0.8); 
+  border-radius: 0.5rem; 
+  background: white; 
+  color: #374151;
+}
+.weatherButton {
+  padding: 0 1rem; 
+  border: 1px dashed #9ca3af; 
+  background: #f9fafb; 
+  color: #6b7280; 
+  border-radius: 0.5rem; 
+  cursor: not-allowed;
+}
+.weatherBody { margin-top: 0.5rem; display: grid; gap: 0.25rem; }
+.weatherRow { display: flex; justify-content: space-between; gap: 1rem; }
+.weatherLabel { color: #6b7280; font-size: 0.9rem; }
+.weatherValueMuted { color: #9ca3af; }
+
+/* ===== Error / No User ===== */
+.noUser {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .todoContainer { padding: 1rem; }
+  .mainTitle { font-size: 2rem; }
+  .titleGroup { flex-direction: column; gap: 0.5rem; }
+  .statsContainer { flex-direction: column; gap: 1rem; }
+  .statDivider { width: 100%; height: 1px; }
+  .filterGroup { grid-template-columns: 1fr; }
+  .addTodoGroup { flex-direction: column; }
+  .todoContent { flex-wrap: wrap; gap: 0.5rem; }
+  .todoLeft { order: 1; }
+  .todoMiddle { order: 3; width: 100%; }
+  .weatherControls { grid-template-columns: 1fr; }
+}
