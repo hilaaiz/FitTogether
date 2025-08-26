@@ -19,14 +19,16 @@ function Register() {
     zipcode: "",
     height: "",
     weight: "",
-    role: "user",
+    role: "user", // ברירת מחדל: user
   });
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // נשמור את ה־token + user ביחד ב־localStorage
   const [, setAuth] = useLocalStorage("auth", { token: null, user: null });
 
-  // שלב 1: בדיקת זמינות
+  // --- שלב 1: בדיקת זמינות username/email ---
   const handleCheck = async (e) => {
     e.preventDefault();
     setError("");
@@ -38,8 +40,6 @@ function Register() {
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
-          password: formData.password,
-          verifyPassword: formData.verifyPassword,
         }),
       });
 
@@ -48,13 +48,14 @@ function Register() {
         throw new Error(data.error || "Check failed");
       }
 
+      // אם פנוי → מעבר לשלב 2
       setStep(2);
     } catch (err) {
       setError(err.message);
     }
   };
 
-  // שלב 2: הרשמה מלאה
+  // --- שלב 2: הרשמה מלאה ---
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
@@ -71,8 +72,13 @@ function Register() {
         throw new Error(data.error || "Registration failed");
       }
 
+      // כאן השרת מחזיר token + user
       const { token, user } = await res.json();
+
+      // שמירה ב־localStorage
       setAuth({ token, user });
+
+      // מעבר ל־home (כי מזהים user דרך JWT ולא דרך :id בנתיב)
       navigate("/home", { replace: true });
     } catch (err) {
       setError(err.message);
@@ -93,7 +99,9 @@ function Register() {
                   placeholder="Username"
                   required
                   value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
                 />
               </div>
               <div className={styles.inputGroup}>
@@ -102,7 +110,9 @@ function Register() {
                   placeholder="Email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
               <div className={styles.inputGroup}>
@@ -111,7 +121,9 @@ function Register() {
                   placeholder="Password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                 />
               </div>
               <div className={styles.inputGroup}>
@@ -120,7 +132,9 @@ function Register() {
                   placeholder="Verify Password"
                   required
                   value={formData.verifyPassword}
-                  onChange={(e) => setFormData({ ...formData, verifyPassword: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, verifyPassword: e.target.value })
+                  }
                 />
               </div>
             </>
@@ -133,7 +147,9 @@ function Register() {
                   type="text"
                   placeholder="Full Name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                 />
               </div>
 
@@ -143,7 +159,9 @@ function Register() {
                     type="text"
                     placeholder="Street"
                     value={formData.street}
-                    onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, street: e.target.value })
+                    }
                   />
                 </div>
                 <div className={styles.halfInput}>
@@ -151,7 +169,9 @@ function Register() {
                     type="text"
                     placeholder="City"
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -162,7 +182,9 @@ function Register() {
                     type="text"
                     placeholder="Zipcode"
                     value={formData.zipcode}
-                    onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, zipcode: e.target.value })
+                    }
                   />
                 </div>
                 <div className={styles.halfInput}>
@@ -170,7 +192,9 @@ function Register() {
                     type="number"
                     placeholder="Height (cm)"
                     value={formData.height}
-                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, height: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -180,14 +204,18 @@ function Register() {
                   type="number"
                   placeholder="Weight (kg)"
                   value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, weight: e.target.value })
+                  }
                 />
               </div>
 
               <div className={styles.inputGroup}>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
                 >
                   <option value="user">User</option>
                   <option value="coach">Coach</option>
