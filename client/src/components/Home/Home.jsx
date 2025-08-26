@@ -6,32 +6,29 @@ import styles from "./Home.module.css";
 
 function Home({ showInfo, setShowInfo }) {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [editMode, setEditMode] = useState(false); // ← מצב עריכה/צפייה
+  const [auth, setAuth] = useState(null);   // כולל token + user
+  const [editMode, setEditMode] = useState(false);
   const hasRun = useRef(false);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const stored = localStorage.getItem("user");
+    const stored = localStorage.getItem("auth");
     if (stored) {
       const parsed = JSON.parse(stored);
-      const userObj = Array.isArray(parsed) ? parsed[0] : parsed;
-      setUser(userObj);
+      setAuth(parsed);
     } else {
       navigate("/login");
     }
   }, [navigate]);
 
-  if (!user) return null;
+  if (!auth) return null;
+  const { user, token } = auth;
 
-  // פונקציה שתשמור את השינויים ותעדכן את הסטייט
   const handleSave = async (updatedUser) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`http://localhost:5000/users/${user.id}`, {
+      const response = await fetch(`http://localhost:5000/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -45,9 +42,11 @@ function Home({ showInfo, setShowInfo }) {
       }
 
       const data = await response.json();
-      // עדכון ב־state וגם ב־localStorage
-      setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // עדכון גם ב־state וגם בלוקאל סטורג'
+      const newAuth = { token, user: data.user };
+      setAuth(newAuth);
+      localStorage.setItem("auth", JSON.stringify(newAuth));
       setEditMode(false);
     } catch (err) {
       console.error("Error saving user:", err);
@@ -71,13 +70,13 @@ function Home({ showInfo, setShowInfo }) {
             <UserInfo
               user={user}
               onClose={() => setShowInfo(false)}
-              onEdit={() => setEditMode(true)} // מעבר למצב עריכה
+              onEdit={() => setEditMode(true)}
             />
           ) : (
             <UserEdit
               user={user}
-              onClose={() => setEditMode(false)} // ביטול עריכה
-              onSave={handleSave} // שמירת שינויים
+              onClose={() => setEditMode(false)}
+              onSave={handleSave}
             />
           )}
         </div>
