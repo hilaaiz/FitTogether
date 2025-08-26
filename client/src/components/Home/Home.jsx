@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import UserInfo from "../UserInfo/UserInfo.jsx";
-import UserEdit from "../UserEdit/UserEdit.jsx";
+import UserEdit from "../UserInfo/UserEdit.jsx";
 import styles from "./Home.module.css";
 
 function Home({ showInfo, setShowInfo }) {
