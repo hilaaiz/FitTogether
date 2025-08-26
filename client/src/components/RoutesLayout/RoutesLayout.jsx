@@ -1,21 +1,23 @@
+// components/RoutesLayout/RoutesLayout.jsx
 import { Outlet, useNavigate } from "react-router-dom";
 import styles from "./RoutesLayout.module.css";
 
 function RoutesLayout({ setShowInfo }) {
   const navigate = useNavigate();
 
-  // לקרוא מ־auth ולא מ־user
+  // נטילת המשתמש מה־auth ששמור בלוקאל סטורג’
   const storedAuth = JSON.parse(localStorage.getItem("auth"));
-  const userId = storedAuth?.user?.id;
+  const token = storedAuth?.token;
+  const user = storedAuth?.user;
 
   const handleLogout = () => {
-    localStorage.removeItem("auth");
+    localStorage.removeItem("auth"); // נקה גם את המשתמש וגם את ה־token
     navigate("/login");
   };
 
   const goTo = (path) => {
-    if (!userId) return navigate("/login");
-    navigate(`/users/${userId}/${path}`);
+    if (!token) return navigate("/login");
+    navigate(`/${path}`);
   };
 
   return (

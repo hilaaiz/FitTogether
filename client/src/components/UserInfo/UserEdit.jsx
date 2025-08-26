@@ -3,7 +3,6 @@ import styles from "./UserInfo.module.css";
 
 function UserEdit({ user, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    username: user.username || "",
     email: user.email || "",
     phone: user.phone || "",
     height: user.height || "",
@@ -23,7 +22,14 @@ function UserEdit({ user, onClose, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    const dataToSave = {
+      ...formData,
+      height: formData.height ? parseFloat(formData.height) : null,
+      weight: formData.weight ? parseFloat(formData.weight) : null,
+    };
+
+    onSave(dataToSave);
   };
 
   return (
@@ -44,13 +50,6 @@ function UserEdit({ user, onClose, onSave }) {
         <section className={styles.infoSection}>
           <h3 className={styles.sectionTitle}>Personal Info</h3>
           <div className={styles.infoGrid}>
-            <input
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Username"
-              className={styles.input}
-            />
             <input
               name="email"
               value={formData.email}

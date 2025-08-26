@@ -11,7 +11,9 @@ function UserInfo({ user, onEdit }) {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const storedAuth = JSON.parse(localStorage.getItem("auth"));
+      const token = storedAuth?.token;
+
       const response = await fetch("http://localhost:5000/users/me", {
         method: "DELETE",
         headers: {
@@ -25,8 +27,8 @@ function UserInfo({ user, onEdit }) {
         return;
       }
 
-      // ניקוי localStorage והחזרה לעמוד login
-      localStorage.clear();
+      // מחיקה מדויקת של ה־auth
+      localStorage.removeItem("auth");
       navigate("/login");
     } catch (error) {
       console.error("Error deleting profile:", error);
