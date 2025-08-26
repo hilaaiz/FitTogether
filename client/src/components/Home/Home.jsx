@@ -6,7 +6,8 @@ import styles from "./Home.module.css";
 
 function Home({ showInfo, setShowInfo }) {
   const navigate = useNavigate();
-  const [auth, setAuth] = useState(null);   // כולל token + user
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const hasRun = useRef(false);
 
@@ -17,14 +18,14 @@ function Home({ showInfo, setShowInfo }) {
     const stored = localStorage.getItem("auth");
     if (stored) {
       const parsed = JSON.parse(stored);
-      setAuth(parsed);
+      setUser(parsed.user);
+      setToken(parsed.token);
     } else {
       navigate("/login");
     }
   }, [navigate]);
 
-  if (!auth) return null;
-  const { user, token } = auth;
+  if (!user) return null;
 
   const handleSave = async (updatedUser) => {
     try {
@@ -42,11 +43,10 @@ function Home({ showInfo, setShowInfo }) {
       }
 
       const data = await response.json();
+      setUser(data.user);
 
-      // עדכון גם ב־state וגם בלוקאל סטורג'
-      const newAuth = { token, user: data.user };
-      setAuth(newAuth);
-      localStorage.setItem("auth", JSON.stringify(newAuth));
+      // עדכון גם ב-localStorage
+      localStorage.setItem("auth", JSON.stringify({ token, user: data.user }));
       setEditMode(false);
     } catch (err) {
       console.error("Error saving user:", err);
