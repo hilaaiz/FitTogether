@@ -1,0 +1,24 @@
+.addressBlock {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.addressBlock:hover {
+  border-color: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.15);
+}
+
+.addressBlock p {
+  margin: 0 0 6px 0;
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.addressBlock p:last-child {
+  margin-bottom: 0;
+}
