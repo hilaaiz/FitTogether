@@ -1,0 +1,272 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* General page styling */
+.signupPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Light background */
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Wrapper for both forms */
+.signupWrapper {
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 550px; /* Match provided max-width */
+  border: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+/* Header styling */
+form h1,
+form h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #1f1f1f;
+  font-size: 1.8rem; /* Match provided font size */
+}
+
+/* Signup form input box */
+.signupInputBox {
+  position: relative;
+  margin-bottom: 1.5rem; /* Match provided margin */
+}
+
+.signupInputBox input {
+  width: 100%;
+  padding: 0.75rem;
+  padding-right: 2.5rem; /* Space for icon */
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.signupInputBox input:focus {
+  border-color: #1f1f1f; /* Dark border on focus */
+}
+
+.signupIcon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Error message */
+.errorMessage {
+  color: #dc3545; /* Red for error messages */
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Signup button */
+.signupBtn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1f1f1f; /* Dark button */
+  color: #ffffff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.signupBtn:hover {
+  background-color: #343a40; /* Slightly lighter dark on hover */
+}
+
+/* Register link */
+.signupRegisterLink {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.signupRegisterLink a {
+  color: #1f1f1f;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signupRegisterLink a:hover {
+  text-decoration: underline;
+}
+
+/* User details form styling (for second form when isValidUsername is true) */
+.userDetailsRow {
+  display: flex;
+  gap: 1rem; /* Reduced gap to prevent overflow */
+  margin-bottom: 1.5rem; /* Match signup form spacing */
+}
+
+.userDetailsInputBox {
+  flex: 1;
+  max-width: calc(50% - 0.5rem); /* Ensure two inputs fit within max-width */
+  position: relative;
+}
+
+.userDetailsInputBox input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.userDetailsInputBox input:focus {
+  border-color: #1f1f1f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .signupWrapper {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .userDetailsRow {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .userDetailsInputBox {
+    max-width: 100%;
+  }
+}
+
+
+.RegisterPage {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: "Inter", sans-serif;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.formWrapper {
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 550px;
+  border: 1px solid #e0e0e0;
+
+}
+
+form h1,
+form h3 {
+  text-align: center;
+  color: #1f1f1f;
+  font-size: 1.6rem;
+}
+
+.inputGroup {
+  position: relative;
+  width: 100%;
+  margin-bottom: 0.7rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+}
+
+.halfInput {
+  flex: 1;
+  max-width: calc(50% - 0.5rem);
+}
+
+.inputGroup input,
+.halfInput input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus,
+.halfInput input:focus {
+  border-color: #1f1f1f;
+  outline: none;
+}
+
+.btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1f1f1f;
+  color: #ffffff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 1rem;
+}
+
+.btn:hover {
+  background-color: #343a40;
+}
+
+.registerLink {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.registerLink a {
+  color: #1f1f1f;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.registerLink a:hover {
+  text-decoration: underline;
+}
+
+form p {
+  color: #dc3545;
+  font-size: 0.9rem;
+}

@@ -1,11 +1,65 @@
-// src/components/Challenges/Challenges.jsx
-import React from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import styles from "./RoutesLayout.module.css";
 
-export default function RoutesLayout() {
+function RoutesLayout({ setShowInfo }) {
+  const navigate = useNavigate();
+
+  // לקרוא מ־auth ולא מ־user
+  const storedAuth = JSON.parse(localStorage.getItem("auth"));
+  const userId = storedAuth?.user?.id;
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth");
+    navigate("/login");
+  };
+
+  const goTo = (path) => {
+    if (!userId) return navigate("/login");
+    navigate(`/users/${userId}/${path}`);
+  };
+
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h1>Routes Layout</h1>
-      <p>Placeholder component – content coming soon 🚧</p>
+    <div className={styles.container}>
+      <div className={styles.navigateBar}>
+        <button
+          className={`${styles.navButton} ${styles.infoButton}`}
+          onClick={() => {
+            goTo("home");
+            setShowInfo(true);
+          }}
+        >
+          Info
+        </button>
+        <button
+          className={styles.navButton}
+          onClick={() => goTo("todos")}
+        >
+          Todos
+        </button>
+        <button
+          className={styles.navButton}
+          onClick={() => goTo("posts")}
+        >
+          Posts
+        </button>
+        <button
+          className={styles.navButton}
+          onClick={() => goTo("challenges")}
+        >
+          Challenges
+        </button>
+        <button
+          className={`${styles.navButton} ${styles.logoutButton}`}
+          onClick={handleLogout}
+        >
+          LogOut
+        </button>
+      </div>
+      <div className={styles.content}>
+        <Outlet />
+      </div>
     </div>
   );
 }
+
+export default RoutesLayout;
