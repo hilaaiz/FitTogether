@@ -1,0 +1,78 @@
+.RegisterPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #74ebd5, #acb6e5);
+}
+
+.formWrapper {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.inputGroup {
+  margin-bottom: 15px;
+}
+
+.inputGroup input,
+.inputGroup select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.halfInput {
+  flex: 1;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease;
+}
+
+.btn:hover {
+  background: #357ab8;
+}
+
+.errorMessage {
+  color: red;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.registerLink {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.registerLink a {
+  color: #4a90e2;
+  text-decoration: none;
+}
