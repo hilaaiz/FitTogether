@@ -1,16 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import UserInfo from "../UserInfo/UserInfo.jsx";
+import UserEdit from "../UserEdit/UserEdit.jsx";
 import styles from "./Home.module.css";
 
 function Home({ showInfo, setShowInfo }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [editMode, setEditMode] = useState(false); // ← מצב עריכה/צפייה
   const hasRun = useRef(false);
 
   useEffect(() => {
-    if (hasRun.current) return; 
-    hasRun.current = true;  
+    if (hasRun.current) return;
+    hasRun.current = true;
 
     const stored = localStorage.getItem("user");
     if (stored) {
@@ -18,46 +20,66 @@ function Home({ showInfo, setShowInfo }) {
       const userObj = Array.isArray(parsed) ? parsed[0] : parsed;
       setUser(userObj);
     } else {
-      navigate("/login"); // redirect אם אין משתמש
+      navigate("/login");
     }
   }, [navigate]);
 
   if (!user) return null;
 
+  // פונקציה שתשמור את השינויים ותעדכן את הסטייט
+  const handleSave = async (updatedUser) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`http://localhost:5000/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
+      const data = await response.json();
+      // עדכון ב־state וגם ב־localStorage
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setEditMode(false);
+    } catch (err) {
+      console.error("Error saving user:", err);
+    }
+  };
+
   return (
     <div className={styles.homeContainer}>
-      {/* Welcome Section */}
       <div className={styles.welcomeSection}>
         <h1 className={styles.welcomeTitle}>
           Welcome, {user.username}
         </h1>
         <p className={styles.welcomeSubtitle}>
-          Role: {user.role || "user"}
+          Good to see you here
         </p>
       </div>
 
-      {/* Dashboard */}
-      <div className={styles.dashboard}>
-        <button onClick={() => navigate("/todos")} className={styles.card}>
-          My Todos
-        </button>
-        <button onClick={() => navigate("/posts")} className={styles.card}>
-          My Posts
-        </button>
-        <button onClick={() => navigate("/challenges")} className={styles.card}>
-          Challenges
-        </button>
-        {user.role === "coach" && (
-          <button onClick={() => navigate("/challenges")} className={styles.card}>
-            + Create Challenge
-          </button>
-        )}
-      </div>
-
-      {/* User Info Modal */}
       {showInfo && (
         <div className={styles.infoSection}>
-          <UserInfo user={user} onClose={() => setShowInfo(false)} />
+          {!editMode ? (
+            <UserInfo
+              user={user}
+              onClose={() => setShowInfo(false)}
+              onEdit={() => setEditMode(true)} // מעבר למצב עריכה
+            />
+          ) : (
+            <UserEdit
+              user={user}
+              onClose={() => setEditMode(false)} // ביטול עריכה
+              onSave={handleSave} // שמירת שינויים
+            />
+          )}
         </div>
       )}
     </div>
