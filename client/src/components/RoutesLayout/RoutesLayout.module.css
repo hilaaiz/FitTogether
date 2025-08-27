@@ -12,7 +12,7 @@
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -54,7 +54,8 @@
   border: 1px solid #e9d5ff;
 }
 
-.logoutBtn {
+.logoutBtn,
+.profileBtn {
   background: #fff;
   color: #6d28d9;
   border: 1px solid #e9d5ff;
@@ -64,7 +65,8 @@
   cursor: pointer;
   transition: all .15s ease;
 }
-.logoutBtn:hover {
+.logoutBtn:hover,
+.profileBtn:hover {
   background: #faf5ff;
   box-shadow: 0 6px 16px rgba(109, 40, 217, .18);
 }
@@ -104,9 +106,56 @@
   box-shadow: 0 8px 22px rgba(109,40,217,.22);
 }
 
-/* תוכן הדף */
+/* Page content */
 .pageContent {
   position: relative;
   z-index: 1;
   display: block;
+}
+
+/* ===== Modal Overlay (global) ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45); /* #111827 */
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  backdrop-filter: blur(2px);
+}
+
+.sheet {
+  position: relative;
+  width: min(920px, calc(100vw - 32px));
+  height: min(80vh, 720px);
+  background: transparent; /* נשתמש במודלים הקיימים של הקומפוננטות */
+  display: grid;
+  place-items: stretch;
+}
+
+/* כפתור סגירה קטן בפינה */
+.closeX {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+.closeX:hover {
+  background: #f3f4f6;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .sheet {
+    width: calc(100vw - 20px);
+    height: min(84vh, 720px);
+  }
 }

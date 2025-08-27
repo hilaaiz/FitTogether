@@ -1,22 +1,34 @@
-// NEW: Global layout with persistent Topbar + Nav Rail
+// Global layout with persistent Topbar + Nav Rail + Profile Modal (view/edit)
+// Profile button ONLY in the Nav Rail (not in the Topbar)
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import styles from "./RoutesLayout.module.css";
 
-export default function RoutesLayout({ setShowInfo }) {
+// Existing profile components
+import UserInfo from "../UserInfo/UserInfo.jsx";
+import UserEdit from "../UserInfo/UserEdit.jsx";
+
+export default function RoutesLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [user, setUser] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const user = auth?.user || null;
+  const token = auth?.token || null;
 
-  // קבלת המשתמש המחובר מ-localStorage
+  // Profile modal state (global)
+  const [showProfile, setShowProfile] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  // load current auth on route change (keeps avatar initial fresh)
   useEffect(() => {
     const stored = localStorage.getItem("auth");
     if (stored) {
-      const parsed = JSON.parse(stored);
-      setUser(parsed.user);
+      setAuth(JSON.parse(stored));
+    } else {
+      setAuth(null);
     }
-  }, [location.pathname]); // רענון קל כשמשנים עמוד
+  }, [location.pathname]);
 
   const userInitial = useMemo(() => {
     const n = user?.username || user?.name || "";
@@ -32,12 +44,60 @@ export default function RoutesLayout({ setShowInfo }) {
     navigate("/login");
   };
 
+  // Open/Close modal
+  const openProfile = () => {
+    setShowProfile(true);
+    setEditMode(false);
+  };
+  const closeProfile = () => {
+    setShowProfile(false);
+    setEditMode(false);
+  };
+
+  // Save from edit modal (PUT /users/me)
+  const handleSave = async (updatedUser) => {
+    try {
+      const res = await fetch(`http://localhost:5000/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedUser),
+      });
+      if (!res.ok) {
+        const e = await res.text();
+        throw new Error(e || "Failed to update user");
+      }
+      const data = await res.json();
+      const nextAuth = { token, user: data.user };
+      localStorage.setItem("auth", JSON.stringify(nextAuth));
+      setAuth(nextAuth);
+      setEditMode(false);
+      setShowProfile(true);
+    } catch (err) {
+      console.error("Save profile error:", err);
+      alert("Failed to save profile.");
+    }
+  };
+
   return (
     <div className={styles.layoutRoot}>
-      {/* Topbar (קבוע בכל העמודים) */}
+      {/* Topbar (בלי כפתור פרופיל) */}
       <header className={styles.topbar}>
-        <div className={styles.brand} onClick={() => navigate("/home")}>
-          <span className={styles.brandIcon} aria-hidden>👟</span>
+        <div
+          className={styles.brand}
+          onClick={() => navigate("/home")}
+          role="button"
+          tabIndex={0}
+        >
+          <img 
+            src="/favicon-24x24.png" 
+            alt="FitTogether logo" 
+            className={styles.brandIcon}
+            width="24" 
+            height="24"
+          />
           <span className={styles.brandText}>FitTogether</span>
         </div>
 
@@ -51,45 +111,81 @@ export default function RoutesLayout({ setShowInfo }) {
         </div>
       </header>
 
-      {/* Nav Rail לבן (קבוע בכל העמודים) */}
+      {/* Nav Rail – כאן נמצא כפתור ה-Profile */}
       <nav className={styles.navRail}>
         <button
-          className={`${styles.navChip} ${isActive("/home") ? styles.activeChip : ""}`}
+          className={`${styles.navChip} ${
+            isActive("/home") ? styles.activeChip : ""
+          }`}
           onClick={() => navigate("/home")}
         >
           Home
         </button>
         <button
-          className={`${styles.navChip} ${isActive("/todos") ? styles.activeChip : ""}`}
+          className={`${styles.navChip} ${
+            isActive("/todos") ? styles.activeChip : ""
+          }`}
           onClick={() => navigate("/todos")}
         >
           Tasks
         </button>
         <button
-          className={`${styles.navChip} ${isActive("/posts") ? styles.activeChip : ""}`}
+          className={`${styles.navChip} ${
+            isActive("/posts") ? styles.activeChip : ""
+          }`}
           onClick={() => navigate("/posts")}
         >
           Posts
         </button>
         <button
-          className={`${styles.navChip} ${isActive("/challenges") ? styles.activeChip : ""}`}
+          className={`${styles.navChip} ${
+            isActive("/challenges") ? styles.activeChip : ""
+          }`}
           onClick={() => navigate("/challenges")}
         >
           Group challenges
         </button>
-        <button
-          className={styles.navChip}
-          onClick={() => setShowInfo((v) => !v)}
-        >
-          { /* הכפתור רק פותח/סוגר את המודאל בפרופיל בדפים שמציגים אותו */ }
+        {/* Profile רק כאן */}
+        <button className={styles.navChip} onClick={openProfile}>
           Profile
         </button>
       </nav>
 
-      {/* אזור התוכן של הדפים */}
+      {/* Page Content */}
       <main className={styles.pageContent}>
         <Outlet />
       </main>
+
+      {/* PROFILE MODAL – גלובלי, זמין בכל דף */}
+      {showProfile && (
+        <div className={styles.overlay} onClick={closeProfile}>
+          <div
+            className={styles.sheet}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={editMode ? "Edit Profile" : "User Information"}
+          >
+            {!editMode ? (
+              <UserInfo user={user || {}} onEdit={() => setEditMode(true)} />
+            ) : (
+              <UserEdit
+                user={user || {}}
+                onClose={() => setEditMode(false)}
+                onSave={handleSave}
+              />
+            )}
+            {/* Close X */}
+            <button
+              className={styles.closeX}
+              onClick={closeProfile}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
