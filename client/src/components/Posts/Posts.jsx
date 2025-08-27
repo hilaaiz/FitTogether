@@ -1,227 +1,574 @@
-// components/Posts/Posts.jsx
 import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import useLocalStorage from "../../useLocalStorage";
 import styles from "./Posts.module.css";
 
 const API = "http://localhost:5000";
 
 function Posts() {
-  const auth = JSON.parse(localStorage.getItem("auth"));
-  const token = auth?.token;
-  const user = auth?.user;
+    const { id } = useParams();
+    const [auth] = useLocalStorage("auth", { token: null, user: null });
 
-  const [posts, setPosts] = useState([]);
-  const [selectedPostId, setSelectedPostId] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [newPost, setNewPost] = useState({ title: "", body: "" });
-  const [newCommentText, setNewCommentText] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  const [commentsLoaded, setCommentsLoaded] = useState(false);
-  const [isAddingPost, setIsAddingPost] = useState(false);
-  const [isAddingComment, setIsAddingComment] = useState(false);
+    const [posts, setPosts] = useState([]);
+    const [selectedPostId, setSelectedPostId] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [newPost, setNewPost] = useState({ title: "", body: "" });
+    const [filter, setFilter] = useState({ text: "", sortBy: "id" });
+    const [newCommentText, setNewCommentText] = useState("");
+    const [loaded, setLoaded] = useState(false);
+    const [commentsLoaded, setCommentsLoaded] = useState(false);
+    const [isAddingPost, setIsAddingPost] = useState(false);
+    const [isAddingComment, setIsAddingComment] = useState(false);
 
-  const hasRun = useRef(false);
+    // מצבי עריכה
+    const [isEditingPost, setIsEditingPost] = useState(false);
+    const [editedPost, setEditedPost] = useState({ title: "", body: "" });
+    const [isSavingPost, setIsSavingPost] = useState(false);
 
-  // טעינת פוסטים
-  useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
-    if (!token) return;
+    const hasRun = useRef(false);
 
-    fetch(`${API}/posts`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data);
-        setLoaded(true);
-      })
-      .catch((err) => console.error("Error loading posts", err));
-  }, [token]);
+    // --- טעינת פוסטים ---
+    useEffect(() => {
+        if (hasRun.current) return;
+        hasRun.current = true;
 
-  // הוספת פוסט
-  const handleAddPost = async () => {
-    if (!newPost.title.trim() || !newPost.body.trim()) return;
-    setIsAddingPost(true);
-    try {
-      const res = await fetch(`${API}/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newPost),
-      });
-      if (!res.ok) throw new Error("Failed to create post");
-      const data = await res.json();
-      setPosts([...posts, data]);
-      setNewPost({ title: "", body: "" });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAddingPost(false);
-    }
-  };
+        if (auth?.token) {
+            fetch(`${API}/posts`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            })
+                .then(async (res) => {
+                    if (!res.ok) throw new Error(`Failed: ${res.status}`);
+                    const data = await res.json();
+                    if (Array.isArray(data)) {
+                        setPosts(data);
+                    } else {
+                        setPosts([]);
+                    }
+                    setLoaded(true);
 
-  // מחיקת פוסט
-  const handleDeletePost = async (id) => {
-    const post = posts.find((p) => p.id === id);
-    if (!post) return;
+                    if (id && data.find((post) => post.id == id)) {
+                        setSelectedPostId(id);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error loading posts", err);
+                    setPosts([]);
+                    setLoaded(true);
+                });
+        }
+    }, [auth, id]);
 
-    // לוגיקה: רק יוזר שיצר או מאמן יכול למחוק
-    if (user.id !== post.userId && user.role !== "coach") {
-      alert("You cannot delete this post");
-      return;
-    }
+    // --- יצירת פוסט ---
+    const handleAddPost = async () => {
+        if (!newPost.title.trim() || !newPost.body.trim()) return;
+        setIsAddingPost(true);
 
-    try {
-      const res = await fetch(`${API}/posts/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete post");
-      setPosts(posts.filter((p) => p.id !== id));
-      if (selectedPostId === id) setSelectedPostId(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        try {
+            const res = await fetch(`${API}/posts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${auth.token}`,
+                },
+                body: JSON.stringify(newPost),
+            });
 
-  // טעינת תגובות
-  const loadComments = async (postId) => {
-    try {
-      const res = await fetch(`${API}/posts/${postId}/comments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to load comments");
-      const data = await res.json();
-      setComments(data);
-      setCommentsLoaded(true);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+            if (res.ok) {
+                const data = await res.json();
+                setPosts((prev) => [...prev, data]);
+                setNewPost({ title: "", body: "" });
+            }
+        } catch (err) {
+            console.error("Error adding post:", err);
+        } finally {
+            setIsAddingPost(false);
+        }
+    };
 
-  // הוספת תגובה
-  const handleAddComment = async () => {
-    if (!newCommentText.trim() || !selectedPostId) return;
-    setIsAddingComment(true);
-    try {
-      const res = await fetch(`${API}/posts/${selectedPostId}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text: newCommentText }),
-      });
-      if (!res.ok) throw new Error("Failed to add comment");
-      const data = await res.json();
-      setComments([...comments, data]);
-      setNewCommentText("");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAddingComment(false);
-    }
-  };
+    // --- מחיקת פוסט ---
+    const handleDeletePost = async (post) => {
+        if (post.userId !== auth.user.id && auth.user.role !== "coach") {
+            return alert("You can delete only your own posts (unless coach).");
+        }
 
-  // מחיקת תגובה
-  const handleDeleteComment = async (id) => {
-    const comment = comments.find((c) => c.id === id);
-    if (!comment) return;
+        try {
+            const res = await fetch(`${API}/posts/${post.id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
 
-    // לוגיקה: יוזר = של עצמו, מאמן = הכל
-    if (user.id !== comment.userId && user.role !== "coach") {
-      alert("You cannot delete this comment");
-      return;
-    }
+            if (res.ok) {
+                setPosts((prev) => prev.filter((p) => p.id !== post.id));
+                if (selectedPostId === post.id) handleCloseModal();
+            }
+        } catch (err) {
+            console.error("Error deleting post:", err);
+        }
+    };
 
-    try {
-      const res = await fetch(`${API}/posts/${selectedPostId}/comments/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete comment");
-      setComments(comments.filter((c) => c.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    // --- בחירת פוסט להצגה ---
+    const handleSelectPost = (id) => {
+        setSelectedPostId(id);
+        setComments([]);
+        setCommentsLoaded(false);
+        setNewCommentText("");
+        window.history.pushState(null, "", `/posts/${id}`);
+    };
 
-  if (!user) return <div className={styles.noUser}>Please log in</div>;
+    const handleCloseModal = () => {
+        setSelectedPostId(null);
+        setComments([]);
+        setCommentsLoaded(false);
+        setNewCommentText("");
+        window.history.pushState(null, "", "/posts");
+    };
 
-  return (
-    <div className={styles.postsContainer}>
-      {/* Add Post */}
-      <div className={styles.addPostSection}>
-        <h3>Create New Post</h3>
-        <input
-          type="text"
-          placeholder="Title"
-          value={newPost.title}
-          onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-        />
-        <textarea
-          placeholder="Body"
-          value={newPost.body}
-          onChange={(e) => setNewPost({ ...newPost, body: e.target.value })}
-        />
-        <button onClick={handleAddPost} disabled={isAddingPost}>
-          {isAddingPost ? "Saving..." : "Publish"}
-        </button>
-      </div>
+    // --- טעינת תגובות ---
+    const loadComments = async (postId) => {
+        if (commentsLoaded && selectedPostId === postId) return;
+        try {
+            const res = await fetch(`${API}/posts/${postId}/comments`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(Array.isArray(data) ? data : []);
+                setCommentsLoaded(true);
+            }
+        } catch (err) {
+            console.error("Error loading comments:", err);
+        }
+    };
 
-      {/* Posts List */}
-      {loaded && posts.length === 0 ? (
-        <p>No posts yet.</p>
-      ) : (
-        <div className={styles.postsGrid}>
-          {posts.map((post) => (
-            <div key={post.id} className={styles.postCard}>
-              <h4>{post.title}</h4>
-              <p>{post.body}</p>
-              <div className={styles.actions}>
-                <button onClick={() => setSelectedPostId(post.id)}>
-                  View
-                </button>
-                {(user.id === post.userId || user.role === "coach") && (
-                  <button onClick={() => handleDeletePost(post.id)}>Delete</button>
-                )}
-              </div>
+    // --- הוספת תגובה ---
+    const handleAddComment = async () => {
+        if (!newCommentText.trim() || !selectedPostId) return;
+        setIsAddingComment(true);
+
+        try {
+            const res = await fetch(`${API}/posts/${selectedPostId}/comments`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${auth.token}`,
+                },
+                body: JSON.stringify({ body: newCommentText }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setComments((prev) => [...prev, data]);
+                setNewCommentText("");
+            }
+        } catch (err) {
+            console.error("Error adding comment:", err);
+        } finally {
+            setIsAddingComment(false);
+        }
+    };
+
+    // --- מחיקת תגובה ---
+    const handleDeleteComment = async (comment) => {
+        if (comment.userId !== auth.user.id && auth.user.role !== "coach") {
+            return alert("You can delete only your own comments (unless coach).");
+        }
+
+        try {
+            const res = await fetch(
+                `${API}/posts/${selectedPostId}/comments/${comment.id}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${auth.token}` },
+                }
+            );
+
+            if (res.ok) {
+                setComments((prev) => prev.filter((c) => c.id !== comment.id));
+            }
+        } catch (err) {
+            console.error("Error deleting comment:", err);
+        }
+    };
+
+    // --- עריכת פוסט ---
+    const handleEditPost = () => {
+        const post = posts.find((p) => p.id === selectedPostId);
+        if (!post) return;
+        setEditedPost({ title: post.title, body: post.body });
+        setIsEditingPost(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditingPost(false);
+        setEditedPost({ title: "", body: "" });
+    };
+
+    const handleSavePost = async () => {
+        if (!editedPost.title.trim() || !editedPost.body.trim()) return;
+        setIsSavingPost(true);
+
+        try {
+            const res = await fetch(`${API}/posts/${selectedPostId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${auth.token}`,
+                },
+                body: JSON.stringify(editedPost),
+            });
+
+            if (res.ok) {
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === selectedPostId ? { ...p, ...editedPost } : p
+                    )
+                );
+                setIsEditingPost(false);
+            }
+        } catch (err) {
+            console.error("Error saving post:", err);
+        } finally {
+            setIsSavingPost(false);
+        }
+    };
+
+    // --- סינון ומיון פוסטים ---
+    const filteredPosts = Array.isArray(posts)
+        ? posts
+            .filter((p) => {
+                if (filter.text === "") return true;
+                const searchText = filter.text.toLowerCase();
+                return (
+                    p.title.toLowerCase().includes(searchText) ||
+                    p.id.toString().toLowerCase().includes(searchText)
+                );
+            })
+            .sort((a, b) => {
+                if (filter.sortBy === "id") return a.id.localeCompare(b.id);
+                if (filter.sortBy === "title") return a.title.localeCompare(b.title);
+                return 0;
+            })
+        : [];
+
+    if (!auth.user) return <div className={styles.noUser}>No user found.</div>;
+
+    const selectedPost = posts.find((p) => p.id === selectedPostId);
+
+    return (
+        <div className={styles.postsContainer}>
+            {/* Animated background elements */}
+            <div className={styles.backgroundElements}>
+                <div className={`${styles.bgElement} ${styles.bgElement1}`}></div>
+                <div className={`${styles.bgElement} ${styles.bgElement2}`}></div>
+                <div className={`${styles.bgElement} ${styles.bgElement3}`}></div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Comments Modal */}
-      {selectedPostId && (
-        <div className={styles.modal}>
-          <button onClick={() => setSelectedPostId(null)}>Close</button>
-          <h3>Comments</h3>
-          <button onClick={() => loadComments(selectedPostId)}>Load</button>
-          <ul>
-            {comments.map((c) => (
-              <li key={c.id}>
-                <span>{c.text}</span>
-                {(user.id === c.userId || user.role === "coach") && (
-                  <button onClick={() => handleDeleteComment(c.id)}>X</button>
+            <div className={styles.content}>
+                {/* Header Section */}
+                <div className={styles.header}>
+                    <div className={styles.titleGroup}>
+                        <div className={styles.iconWrapper}>
+                            <span className={styles.sparkleIcon}>📝</span>
+                        </div>
+                        <h1 className={styles.mainTitle}>Posts Dashboard</h1>
+                    </div>
+                </div>
+
+                {/* Add New Post Section */}
+                <div className={styles.addPostSection}>
+                    <div className={styles.addPostContainer}>
+                        <h3 className={styles.sectionTitle}>
+                            <span className={styles.sectionIcon}>✍️</span>
+                            Create New Post
+                        </h3>
+                        <div className={styles.inputGroup}>
+                            <input
+                                type="text"
+                                placeholder="Post title..."
+                                value={newPost.title}
+                                onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                                className={styles.titleInput}
+                            />
+                            <textarea
+                                placeholder="Share your thoughts..."
+                                value={newPost.body}
+                                onChange={(e) => setNewPost({ ...newPost, body: e.target.value })}
+                                className={styles.bodyTextarea}
+                                rows="3"
+                            />
+                        </div>
+                        <button
+                            onClick={handleAddPost}
+                            disabled={isAddingPost || !newPost.title.trim() || !newPost.body.trim()}
+                            className={styles.addButton}
+                        >
+                            {isAddingPost ? (
+                                <div className={styles.loadingSpinner}></div>
+                            ) : (
+                                <>
+                                    <span className={styles.buttonIcon}>📤</span>
+                                    Publish
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {loaded && posts.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <div className={styles.emptyIcon}>📄</div>
+                        <p className={styles.emptyTitle}>No posts yet!</p>
+                        <p className={styles.emptySubtitle}>Create your first post to start sharing.</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Filter Section */}
+                        <div className={styles.filtersSection}>
+                            <div className={styles.filtersContainer}>
+                                <div className={styles.filterGroup}>
+                                    <div className={styles.searchGroup}>
+                                        <span className={styles.searchIcon}>🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search posts..."
+                                            value={filter.text}
+                                            onChange={(e) => setFilter({ ...filter, text: e.target.value })}
+                                            className={styles.searchInput}
+                                        />
+                                    </div>
+
+                                    <div className={styles.selectGroup}>
+                                        <span className={styles.sortIcon}>📊</span>
+                                        <select
+                                            value={filter.sortBy}
+                                            onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
+                                            className={styles.sortSelect}
+                                        >
+                                            <option value="id">Sort by ID</option>
+                                            <option value="title">Sort by Title</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Posts Grid */}
+                        <div className={styles.postsListSection}>
+                            <h3 className={styles.sectionTitle}>
+                                <span className={styles.sectionIcon}>📋</span>
+                                Your Posts ({filteredPosts.length})
+                            </h3>
+
+                            <div className={styles.postsGrid}>
+                                {filteredPosts.map((post, index) => (
+                                    <div
+                                        key={post.id}
+                                        className={styles.postCard}
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        <div className={styles.postHeader}>
+                                            <span className={styles.postId}>#{post.id}</span>
+                                        </div>
+
+                                        <h4 className={styles.postTitle}>{post.title}</h4>
+
+                                        <div className={styles.postPreview}>
+                                            {post.body.substring(0, 80)}...
+                                        </div>
+
+                                        <div className={styles.postActions}>
+                                            <button
+                                                className={styles.viewButton}
+                                                onClick={() => handleSelectPost(post.id)}
+                                            >
+                                                👁️ View
+                                            </button>
+                                            <button
+                                                className={styles.deleteButton}
+                                                onClick={() => handleDeletePost(post)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
                 )}
-              </li>
-            ))}
-          </ul>
-          <input
-            type="text"
-            placeholder="Add a comment..."
-            value={newCommentText}
-            onChange={(e) => setNewCommentText(e.target.value)}
-          />
-          <button onClick={handleAddComment} disabled={isAddingComment}>
-            Add
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+            </div>
 
+            {/* Modal for Selected Post */}
+            {selectedPostId && selectedPost && (
+                <>
+                    <div className={styles.modalOverlay} onClick={handleCloseModal}></div>
+                    <div className={styles.modal}>
+                        <div className={styles.modalHeader}>
+                            <h3 className={styles.modalTitle}>
+                                <span className={styles.sectionIcon}>📖</span>
+                                Post #{selectedPostId}
+                            </h3>
+                            <button className={styles.closeButton} onClick={handleCloseModal}>
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className={styles.modalContent}>
+                            {/* Edit Post Content */}
+                            <div className={styles.editSection}>
+                                <div className={styles.editHeader}>
+                                    {!isEditingPost ? (
+                                        <button
+                                            className={styles.editButton}
+                                            onClick={handleEditPost}
+                                        >
+                                            ✏️ Edit Post
+                                        </button>
+                                    ) : (
+                                        <div className={styles.editActions}>
+                                            <button
+                                                className={styles.saveButton}
+                                                onClick={handleSavePost}
+                                                disabled={isSavingPost || !editedPost.title.trim() || !editedPost.body.trim()}
+                                            >
+                                                {isSavingPost ? (
+                                                    <div className={styles.loadingSpinner}></div>
+                                                ) : (
+                                                    <>💾 Save</>
+                                                )}
+                                            </button>
+                                            <button
+                                                className={styles.cancelButton}
+                                                onClick={handleCancelEdit}
+                                                disabled={isSavingPost}
+                                            >
+                                                ❌ Cancel
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className={styles.editGroup}>
+                                    <label className={styles.fieldLabel}>Title:</label>
+                                    {isEditingPost ? (
+                                        <input
+                                            type="text"
+                                            value={editedPost.title}
+                                            onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
+                                            className={styles.editInput}
+                                        />
+                                    ) : (
+                                        <div className={styles.readOnlyField}>{selectedPost.title}</div>
+                                    )}
+                                </div>
+
+                                <div className={styles.editGroup}>
+                                    <label className={styles.fieldLabel}>Content:</label>
+                                    {isEditingPost ? (
+                                        <textarea
+                                            rows="4"
+                                            value={editedPost.body}
+                                            onChange={(e) => setEditedPost({ ...editedPost, body: e.target.value })}
+                                            className={styles.editTextarea}
+                                        />
+                                    ) : (
+                                        <div className={styles.readOnlyField}>{selectedPost.body}</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Comments Section */}
+                            <div className={styles.commentsSection}>
+                                <div className={styles.commentsHeader}>
+                                    <h4 className={styles.sectionTitle}>
+                                        <span className={styles.sectionIcon}>💬</span>
+                                        Comments ({comments.length})
+                                    </h4>
+                                    <button
+                                        className={styles.loadCommentsButton}
+                                        onClick={() => loadComments(selectedPostId)}
+                                    >
+                                        {commentsLoaded ? "🔄" : "👁️"}
+                                    </button>
+                                </div>
+
+                                {/* Add Comment */}
+                                <div className={styles.addCommentSection}>
+                                    <div className={styles.addCommentGroup}>
+                                        <input
+                                            type="text"
+                                            placeholder="Add a comment..."
+                                            value={newCommentText}
+                                            onChange={(e) => setNewCommentText(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                                            className={styles.commentInput}
+                                        />
+                                        <button
+                                            onClick={handleAddComment}
+                                            disabled={isAddingComment || !newCommentText.trim()}
+                                            className={styles.addCommentButton}
+                                        >
+                                            {isAddingComment ? (
+                                                <div className={styles.loadingSpinner}></div>
+                                            ) : (
+                                                "💌"
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Comments List */}
+                                {commentsLoaded && (
+                                    <div className={styles.commentsList}>
+                                        {comments.length === 0 ? (
+                                            <div className={styles.noComments}>
+                                                <span className={styles.noCommentsIcon}>💭</span>
+                                                <p>No comments yet.</p>
+                                            </div>
+                                        ) : (
+                                            comments.map((comment, index) => (
+                                                <div
+                                                    key={comment.id}
+                                                    className={`${styles.commentItem} ${comment.email === user.email ? styles.ownComment : ''}`}
+                                                    style={{ animationDelay: `${index * 30}ms` }}
+                                                >
+                                                    <div className={styles.commentHeader}>
+                                                        <span className={styles.commentId}>#{comment.id}</span>
+                                                        <span className={styles.commentAuthor}>{comment.name}</span>
+                                                        {comment.email === user.email && (
+                                                            <span className={styles.ownBadge}>You</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className={styles.commentContent}>
+                                                        <input
+                                                            type="text"
+                                                            value={comment.body}
+                                                            onChange={(e) => handleEditComment(comment.id, e.target.value)}
+                                                            disabled={comment.email !== user.email}
+                                                            readOnly={comment.email !== user.email}
+                                                            className={`${styles.commentText} ${comment.email !== user.email ? styles.readonly : ''}`}
+                                                        />
+                                                        {comment.email === user.email && (
+                                                            <button
+                                                                className={styles.deleteCommentButton}
+                                                                onClick={() => handleDeleteComment(comment.id)}
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
 export default Posts;
