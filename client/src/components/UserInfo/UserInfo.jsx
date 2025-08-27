@@ -6,7 +6,7 @@ function UserInfo({ user, onEdit }) {
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete your profile?"
+      "Are you sure you want to delete your profile? This action cannot be undone and will remove all your data including tasks, posts, and challenges."
     );
     if (!confirmDelete) return;
 
@@ -16,9 +16,7 @@ function UserInfo({ user, onEdit }) {
 
       const response = await fetch("http://localhost:5000/users/me", {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
@@ -27,7 +25,6 @@ function UserInfo({ user, onEdit }) {
         return;
       }
 
-      // מחיקה מדויקת של ה־auth
       localStorage.removeItem("auth");
       navigate("/login");
     } catch (error) {
@@ -36,81 +33,103 @@ function UserInfo({ user, onEdit }) {
     }
   };
 
+  // *** שימי לב: אין כאן .modal חיצוני. רק כרטיס התוכן ***
   return (
-    <div className={styles.modal}>
+    <div className={styles.modalContent}>
       <div className={styles.modalHeader}>
-        <h2 className={styles.modalTitle}>User Information</h2>
+        <h2 className={styles.modalTitle}>User Profile</h2>
         <div className={styles.actions}>
           <button className={styles.editButton} onClick={onEdit}>
             Edit Profile
           </button>
           <button className={styles.deleteButton} onClick={handleDelete}>
-            Delete Profile
+            Delete Account
           </button>
         </div>
       </div>
 
-      <div className={styles.modalContent}>
-        <section className={styles.infoSection}>
-          <h3 className={styles.sectionTitle}>Personal Info</h3>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Username:</span>
-              <span className={styles.value}>{user.username}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Email:</span>
-              <span className={styles.value}>{user.email || "Not provided"}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Height:</span>
-              <span className={styles.value}>
-                {user.height ? `${user.height} cm` : "Not provided"}
-              </span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Weight:</span>
-              <span className={styles.value}>
-                {user.weight ? `${user.weight} kg` : "Not provided"}
-              </span>
-            </div>
+      <section className={styles.infoSection}>
+        <h3 className={styles.sectionTitle}>Personal Information</h3>
+        <div className={styles.infoGrid}>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Username</span>
+            <span className={styles.value}>{user.username || ""}</span>
           </div>
-        </section>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Role</span>
+            <span className={styles.roleBadge} data-role={user.role}>
+              {user.role || "user"}
+            </span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Email</span>
+            <span className={styles.value}>{user.email || ""}</span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Phone</span>
+            <span className={styles.value}>{user.phone || ""}</span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Height</span>
+            <span className={styles.value}>
+              {user.height ? `${user.height} cm` : ""}
+            </span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Weight</span>
+            <span className={styles.value}>
+              {user.weight ? `${user.weight} kg` : ""}
+            </span>
+          </div>
+        </div>
+      </section>
 
-        <section className={styles.infoSection}>
-          <h3 className={styles.sectionTitle}>Address</h3>
-          <div className={styles.addressBlock}>
-            <p>
-              {user.street || ""} {user.suite || ""}
-            </p>
-            <p>
-              {user.city || ""} {user.zipcode || ""}
-            </p>
-          </div>
-        </section>
+      <section className={styles.infoSection}>
+        <h3 className={styles.sectionTitle}>Address & Location</h3>
+        <div className={styles.addressBlock}>
+          <p>
+            {user.street && user.suite
+              ? `${user.street} ${user.suite}`
+              : user.street || user.suite}
+          </p>
+          <p>
+            {user.city && user.zipcode
+              ? `${user.city}, ${user.zipcode}`
+              : user.city || user.zipcode}
+          </p>
+        </div>
 
-        <section className={styles.infoSection}>
-          <h3 className={styles.sectionTitle}>Company Info</h3>
-          <div className={styles.infoGrid}>
+        {(user.geo_lat || user.geo_lng) && (
+          <div className={styles.coordinateGrid} style={{ marginTop: "1rem" }}>
             <div className={styles.infoItem}>
-              <span className={styles.label}>Company Name:</span>
-              <span className={styles.value}>
-                {user.company_name || "Not provided"}
-              </span>
+              <span className={styles.label}>Latitude</span>
+              <span className={styles.value}>{user.geo_lat || ""}</span>
             </div>
             <div className={styles.infoItem}>
-              <span className={styles.label}>Slogan:</span>
-              <span className={styles.value}>
-                {user.catchPhrase || "Not provided"}
-              </span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Field:</span>
-              <span className={styles.value}>{user.bs || "Not provided"}</span>
+              <span className={styles.label}>Longitude</span>
+              <span className={styles.value}>{user.geo_lng || ""}</span>
             </div>
           </div>
-        </section>
-      </div>
+        )}
+      </section>
+
+      <section className={styles.infoSection}>
+        <h3 className={styles.sectionTitle}>Company Information</h3>
+        <div className={styles.infoGrid}>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Company Name</span>
+            <span className={styles.value}>{user.company_name || ""}</span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Company Slogan</span>
+            <span className={styles.value}>{user.catchPhrase || ""}</span>
+          </div>
+          <div className={styles.infoItem}>
+            <span className={styles.label}>Business Field</span>
+            <span className={styles.value}>{user.bs || ""}</span>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
