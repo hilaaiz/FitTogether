@@ -391,7 +391,11 @@ function Posts() {
                                             <button
                                                 className={styles.saveButton}
                                                 onClick={handleSavePost}
-                                                disabled={isSavingPost || !editedPost.title.trim() || !editedPost.body.trim()}
+                                                disabled={
+                                                    isSavingPost ||
+                                                    !editedPost.title.trim() ||
+                                                    !editedPost.body.trim()
+                                                }
                                             >
                                                 {isSavingPost ? (
                                                     <div className={styles.loadingSpinner}></div>
@@ -410,33 +414,39 @@ function Posts() {
                                     )}
                                 </div>
 
-                                <div className={styles.editGroup}>
-                                    <label className={styles.fieldLabel}>Title:</label>
-                                    {isEditingPost ? (
-                                        <input
-                                            type="text"
-                                            value={editedPost.title}
-                                            onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
-                                            className={styles.editInput}
-                                        />
-                                    ) : (
-                                        <div className={styles.readOnlyField}>{selectedPost.title}</div>
-                                    )}
-                                </div>
+                                {/* השינוי כאן */}
+                                {isEditingPost ? (
+                                    <>
+                                        <div className={styles.editGroup}>
+                                            <label className={styles.fieldLabel}>Title:</label>
+                                            <input
+                                                type="text"
+                                                value={editedPost.title}
+                                                onChange={(e) =>
+                                                    setEditedPost({ ...editedPost, title: e.target.value })
+                                                }
+                                                className={styles.editInput}
+                                            />
+                                        </div>
 
-                                <div className={styles.editGroup}>
-                                    <label className={styles.fieldLabel}>Content:</label>
-                                    {isEditingPost ? (
-                                        <textarea
-                                            rows="4"
-                                            value={editedPost.body}
-                                            onChange={(e) => setEditedPost({ ...editedPost, body: e.target.value })}
-                                            className={styles.editTextarea}
-                                        />
-                                    ) : (
-                                        <div className={styles.readOnlyField}>{selectedPost.body}</div>
-                                    )}
-                                </div>
+                                        <div className={styles.editGroup}>
+                                            <label className={styles.fieldLabel}>Content:</label>
+                                            <textarea
+                                                rows="4"
+                                                value={editedPost.body}
+                                                onChange={(e) =>
+                                                    setEditedPost({ ...editedPost, body: e.target.value })
+                                                }
+                                                className={styles.editTextarea}
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className={styles.postViewCard}>
+                                        <h2 className={styles.postViewTitle}>{selectedPost.title}</h2>
+                                        <p className={styles.postViewBody}>{selectedPost.body}</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Comments Section */}
@@ -526,5 +536,6 @@ function Posts() {
             )}
         </div>
     );
+
 }
 export default Posts;
