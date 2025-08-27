@@ -15,7 +15,7 @@ function Challenges() {
   // filters
   const [filter, setFilter] = useState({
     text: "",
-    type: "all", // "all" | "available" | "joined" | "mine"
+    type: "all", // "all" | "mine"
   });
   const [sortBy, setSortBy] = useState("title"); // "title" | "deadline" | "progress"
 
@@ -32,17 +32,10 @@ function Challenges() {
   // joining challenge
   const [joiningChallengeId, setJoiningChallengeId] = useState(null);
 
-  // completing challenge
-  const [completingChallengeId, setCompletingChallengeId] = useState(null);
-
-  // user's todos (to check which challenges user joined/completed)
-  const [userTodos, setUserTodos] = useState([]);
-
-  /* ---- טעינת אתגרים מהשרת ---- */
+  // טעינת אתגרים מהשרת
   useEffect(() => {
     if (!user || !token) return;
     loadChallenges();
-    loadUserTodos();
   }, [user, token]);
 
   const loadChallenges = async () => {
@@ -61,21 +54,7 @@ function Challenges() {
     }
   };
 
-  const loadUserTodos = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/todos", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Failed to load user todos (${res.status})`);
-      const data = await res.json();
-      setUserTodos(data);
-    } catch (e) {
-      console.error(e);
-      // לא צריך לעצור את הטעינה אם נכשל לטעון todos
-    }
-  };
-
-  /* ---- יצירת אתגר חדש (coach בלבד) ---- */
+  // יצירת אתגר חדש (coach בלבד)
   const handleCreateChallenge = async () => {
     if (!newChallenge.title.trim() || !newChallenge.deadline) {
       setError("Title and deadline are required");
@@ -109,7 +88,7 @@ function Challenges() {
     }
   };
 
-  /* ---- הצטרפות לאתגר ---- */
+  // הצטרפות לאתגר
   const handleJoinChallenge = async (challengeId) => {
     setJoiningChallengeId(challengeId);
     try {
@@ -117,9 +96,11 @@ function Challenges() {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      const data = await res.json();
+      
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to join challenge");
+        throw new Error(data.error || "Failed to join challenge");
       }
       
       // עדכון הסטטיסטיקות של האתגר (goal++ = עוד משתתף)
@@ -131,8 +112,6 @@ function Challenges() {
         )
       );
       
-      // רענון המשימות של המשתמש
-      loadUserTodos();
       setError("");
     } catch (e) {
       console.error(e);
@@ -142,47 +121,7 @@ function Challenges() {
     }
   };
 
-  /* ---- סימון השלמת אתגר ---- */
-  const handleCompleteChallenge = async (challengeId) => {
-    setCompletingChallengeId(challengeId);
-    try {
-      const res = await fetch(`http://localhost:5000/challenges/${challengeId}/complete`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to complete challenge");
-      }
-      
-      const data = await res.json();
-      
-      // עדכון התקדמות האתגר (progress++ = עוד אחד השלים)
-      if (data.challenge) {
-        setChallenges(prev =>
-          prev.map(challenge =>
-            challenge.id === challengeId
-              ? { 
-                  ...challenge, 
-                  progress: data.challenge.progress
-                }
-              : challenge
-          )
-        );
-      }
-      
-      // רענון המשימות של המשתמש
-      loadUserTodos();
-      setError("");
-    } catch (e) {
-      console.error(e);
-      setError(e.message || "Failed to complete challenge");
-    } finally {
-      setCompletingChallengeId(null);
-    }
-  };
-
-  /* ---- מחיקת אתגר (coach בלבד) ---- */
+  // מחיקת אתגר (coach בלבד)
   const handleDeleteChallenge = async (challengeId) => {
     if (!window.confirm("Are you sure you want to delete this challenge? This will remove it for all participants.")) {
       return;
@@ -204,7 +143,7 @@ function Challenges() {
     }
   };
 
-  /* ---- פילטור ומיון ---- */
+  // פילטור ומיון
   const filteredChallenges = useMemo(() => {
     let arr = [...challenges];
 
@@ -228,8 +167,7 @@ function Challenges() {
     return arr;
   }, [challenges, filter, sortBy, isCoach, user?.id]);
 
-  if (!user) return <div className={styles.noUser}>יש להתחבר כדי לראות אתגרים.</div>;
-
+  // פונקציות עזר
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('he-IL');
   };
@@ -246,13 +184,9 @@ function Challenges() {
     return progress >= goal && goal > 0;
   };
 
-  // בדיקה איך המשתמש קשור לאתגר ספציפי
-  const getChallengeStatus = (challengeId) => {
-    const userTodo = userTodos.find(todo => todo.challengeId === challengeId);
-    if (!userTodo) return 'not_joined'; // לא הצטרף
-    if (userTodo.completed) return 'completed'; // השלים
-    return 'joined'; // הצטרף אבל לא השלים
-  };
+  if (!user) {
+    return <div className={styles.noUser}>יש להתחבר כדי לראות אתגרים.</div>;
+  }
 
   return (
     <div className={styles.challengeContainer}>
@@ -436,7 +370,6 @@ function Challenges() {
               const deadlinePassed = isDeadlinePassed(challenge.deadline);
               const challengeCompleted = isChallengeCompleted(challenge.progress, challenge.goal);
               const isMyChallenge = isCoach && challenge.createdBy === user.id;
-              const challengeStatus = getChallengeStatus(challenge.id);
 
               return (
                 <div
@@ -455,40 +388,16 @@ function Challenges() {
                       {isMyChallenge && <span className={styles.myChallengeBadge}>Created by me</span>}
                     </div>
                     <div className={styles.challengeActions}>
-                      {challengeStatus === 'not_joined' ? (
-                        // לא הצטרף - הצג כפתור Join
-                        <button
-                          onClick={() => handleJoinChallenge(challenge.id)}
-                          disabled={joiningChallengeId === challenge.id || deadlinePassed}
-                          className={styles.joinButton}
-                          title={deadlinePassed ? "Challenge expired" : "Join this challenge"}
-                        >
-                          {joiningChallengeId === challenge.id ? (
-                            <div className={styles.loadingSpinner}></div>
-                          ) : deadlinePassed ? "Expired" : "Join"}
-                        </button>
-                      ) : challengeStatus === 'joined' ? (
-                        // הצטרף אבל לא השלים - הצג כפתור Complete
-                        <button
-                          onClick={() => handleCompleteChallenge(challenge.id)}
-                          disabled={completingChallengeId === challenge.id || deadlinePassed}
-                          className={styles.completeButton}
-                          title={deadlinePassed ? "Challenge expired" : "Mark as completed"}
-                        >
-                          {completingChallengeId === challenge.id ? (
-                            <div className={styles.loadingSpinner}></div>
-                          ) : deadlinePassed ? "Expired" : "Complete"}
-                        </button>
-                      ) : (
-                        // השלים - הצג סטטוס
-                        <button
-                          className={styles.completedButton}
-                          disabled={true}
-                          title="Challenge completed"
-                        >
-                          Completed
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleJoinChallenge(challenge.id)}
+                        disabled={joiningChallengeId === challenge.id || deadlinePassed}
+                        className={styles.joinButton}
+                        title={deadlinePassed ? "Challenge expired" : "Join this challenge"}
+                      >
+                        {joiningChallengeId === challenge.id ? (
+                          <div className={styles.loadingSpinner}></div>
+                        ) : deadlinePassed ? "Expired" : "Join"}
+                      </button>
                       
                       {isMyChallenge && (
                         <button
