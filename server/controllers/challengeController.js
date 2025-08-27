@@ -21,7 +21,7 @@ exports.createChallenge = async (req, res) => {
     // יצירת רשומת אתגר
     await db.query(
       'INSERT INTO challenges (id, title, description, goal, progress, deadline, media_url, createdBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, title, description || null, 0, 1, deadline, media_url || null, userId]
+      [id, title, description || null, 1, 0, deadline, media_url || null, userId]
     );
 
     // יצירת משימה למאמן כברירת מחדל
