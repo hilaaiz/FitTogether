@@ -396,54 +396,75 @@
   color: white;
 }
 
-/* ===== Weather Card (placeholder for future API) ===== */
-.weatherCard {
+/* ===== Layout: header + weather side-by-side ===== */
+.headerRow{
+  display:grid;
+  grid-template-columns: 1fr 320px;  
+  gap:1rem;
+  align-items:start;
+  margin-bottom:1rem;
+}
+.headerLeft{ min-width:0; }
+.headerRight{ min-width:0; }
+
+/* ===== Weather Card (compact) ===== */
+.weatherCard{
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   border-radius: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
-  margin-bottom: 1rem;
+  padding: .8rem;
+  border: 1px solid rgba(226,232,240,.8);
+  box-shadow: 0 8px 30px rgba(0,0,0,.07);
 }
-.weatherHeader { 
-  display: flex; align-items: center; justify-content: space-between; 
-  margin-bottom: 0.75rem; 
+.weatherCompact{
+  font-size: .9rem; /* קטן יותר */
 }
-.weatherTitle { font-weight: 700; color: #111827; }
-.weatherBadge { 
-  font-size: 0.75rem; 
-  padding: 0.15rem 0.5rem; 
-  background: #eef2ff; 
-  color: #3730a3; 
-  border: 1px solid #c7d2fe; 
-  border-radius: 0.5rem; 
+.weatherHeader{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:.35rem;
 }
-.weatherControls { 
-  display: grid; 
-  grid-template-columns: 1.2fr 0.8fr auto; 
-  gap: 0.5rem; 
+.weatherTitle{ font-weight:700; color:#111827; font-size:1rem; }
+.weatherBadge{
+  font-size:.7rem; padding:.1rem .45rem; background:#eef2ff; color:#3730a3;
+  border:1px solid #c7d2fe; border-radius:.5rem;
 }
-.weatherInput, .weatherSelect {
-  width: 100%; 
-  padding: 0.6rem 0.8rem; 
-  border: 1px solid rgba(209, 213, 219, 0.8); 
-  border-radius: 0.5rem; 
-  background: white; 
-  color: #374151;
+
+.weatherRefreshBtn{
+  width:100%;
+  padding:.45rem .6rem;
+  border:1px solid rgba(209,213,219,.9);
+  background:#f9fafb; color:#374151;
+  border-radius:.5rem;
+  cursor:pointer;
+  transition:box-shadow .2s, transform .05s;
+  margin-bottom:.35rem;
 }
-.weatherButton {
-  padding: 0 1rem; 
-  border: 1px dashed #9ca3af; 
-  background: #f9fafb; 
-  color: #6b7280; 
-  border-radius: 0.5rem; 
-  cursor: not-allowed;
+.weatherRefreshBtn:hover{ box-shadow:0 0 0 3px rgba(99,102,241,.12); }
+.weatherRefreshBtn:disabled{ opacity:.6; cursor:not-allowed; }
+
+.weatherBody{
+  display:grid;
+  gap:.2rem;
 }
-.weatherBody { margin-top: 0.5rem; display: grid; gap: 0.25rem; }
-.weatherRow { display: flex; justify-content: space-between; gap: 1rem; }
-.weatherLabel { color: #6b7280; font-size: 0.9rem; }
-.weatherValueMuted { color: #9ca3af; }
+.weatherRow{
+  display:flex; justify-content:space-between; align-items:center; gap:.5rem;
+}
+.weatherLabel{ color:#6b7280; font-size:.85rem; }
+.weatherValue{ color:#111827; font-weight:500; text-align:right; }
+.weatherValueMuted{ color:#9ca3af; }
+.weatherIcon{ width:22px; height:22px; margin-inline-start:.4rem; vertical-align:middle; }
+
+/* ===== Recommendation badges ===== */
+.recommendBadge { display:inline-block; padding:.15rem .5rem; border-radius:999px; font-size:.8rem; font-weight:700; }
+.recGood{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.recOk{background:#e0f2fe;color:#075985;border:1px solid #7dd3fc}
+.recWarn{background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+.recBad{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.recNeutral{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb}
+
+@media (max-width: 900px){
+  .headerRow{ grid-template-columns: 1fr; }
+}
 
 /* ===== Error / No User ===== */
 .noUser {
@@ -468,5 +489,157 @@
   .todoContent { flex-wrap: wrap; gap: 0.5rem; }
   .todoLeft { order: 1; }
   .todoMiddle { order: 3; width: 100%; }
-  .weatherControls { grid-template-columns: 1fr; }
+  .headerRow{ grid-template-columns: 1fr;}
 }
+
+/* ===== Weather – glass card like the mock ===== */
+.weatherGlass {
+  background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(245,248,255,.9));
+  border: 1px solid rgba(226,232,240,.8);
+  border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,.07);
+  padding: .9rem;
+}
+
+/* מיקום הכרטיס בצד ימין של ההדר (יש לך כבר .headerRow/.headerRight) */
+.headerRight .weatherCard {
+  width: 340px;          /* פרופורציונלי לקופסת הסטטיסטיקות */
+  max-width: 100%;
+}
+
+/* שכבת ה־Hero (אייקון + טמפ׳/תיאור/המלצה) */
+.weatherHero {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: .75rem;
+  align-items: center;
+}
+
+.weatherIconSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+.weatherIconXL { width: 88px; height: 88px; object-fit: contain; }
+.weatherIconPlaceholder { width: 88px; height: 88px; display:flex; align-items:center; justify-content:center; font-size:3rem; opacity:.5; }
+.weatherLocSmall { font-size: .9rem; color: #6b7280; text-align: center; }
+
+.weatherMainCol {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  align-items: center;   
+  text-align: center;
+}
+.weatherTempBig { font-size: 2.8rem; font-weight: 800; line-height: 1; color: #0f172a; }
+.weatherCond { font-size: 1.05rem; color: #374151; }
+
+/* המלצה – שורה נפרדת, בלי המילה Mixed */
+.weatherReco {
+  display: inline-block;
+  margin-top: .25rem;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.recoGood   { background:#dcfce7; color:#166534; border-color:#86efac; }
+.recoOk     { background:#e0f2fe; color:#075985; border-color:#7dd3fc; }
+.recoWarn   { background:#fef9c3; color:#854d0e; border-color:#fde68a; }
+.recoBad    { background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+.recoNeutral{ background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
+
+.weatherActionsRow {
+  display: flex; gap: .5rem; justify-content: flex-end; margin-top: .4rem;
+}
+.weatherRefreshBtn, .weatherToggleBtn {
+  padding: .35rem .6rem;
+  border-radius: .5rem;
+  font-size: .85rem;
+  border: 1px solid rgba(209,213,219,.9);
+  background: #fff;
+  color:#374151;
+  cursor: pointer;
+}
+.weatherRefreshBtn:disabled { opacity: .6; cursor: default; }
+
+.weatherDetailsGrid {
+  margin-top: .6rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .35rem .75rem;
+}
+.weatherDetailsGrid > div {
+  display: flex; justify-content: space-between; gap: .5rem;
+}
+.weatherLabel { color:#6b7280; font-size:.9rem; }
+.weatherValue { color:#111827; font-weight:600; }
+
+
+/* כרטיס */
+.weatherGlass { background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(245,248,255,.9)); border:1px solid rgba(226,232,240,.8); border-radius:1rem; box-shadow:0 8px 30px rgba(0,0,0,.07); padding:.9rem; }
+
+/* שורה עליונה – שתי עמודות */
+.weatherHero {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: .75rem;
+  align-items: center;
+}
+
+/* צד אייקון + מיקום */
+.weatherIconSide { display:flex; flex-direction:column; align-items:center; gap:.35rem; }
+.weatherIconXL { width:88px; height:88px; object-fit:contain; }
+.weatherIconPlaceholder { width:88px; height:88px; display:flex; align-items:center; justify-content:center; font-size:3rem; opacity:.5; }
+.weatherLocSmall { font-size:.9rem; color:#6b7280; text-align:center; }
+
+/* צבע סגול כמו כפתור ה+ */
+.weatherTempBig { font-size:2.6rem; font-weight:800; line-height:1; color:#6366f1; }
+.weatherCond { font-size:1.03rem; color:#374151; }
+
+/* המלצה – תופסת את כל הרוחב של הכרטיס (שתי העמודות) וממוקמת מתחת לאייקון */
+.weatherRecoFull {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: .2rem;
+  padding: .22rem .6rem;
+  border-radius:999px;
+  font-size:.85rem;
+  font-weight:700;
+  border:1px solid transparent;
+}
+.recoGood   { background:#dcfce7; color:#166534; border-color:#86efac; }
+.recoOk     { background:#e0f2fe; color:#075985; border-color:#7dd3fc; }
+.recoWarn   { background:#fef9c3; color:#854d0e; border-color:#fde68a; }
+.recoBad    { background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+.recoNeutral{ background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
+
+/* כפתורים – זעירים */
+.weatherActionsRow { display:flex; gap:.35rem; justify-content:flex-end; margin-top:.35rem; }
+.weatherRefreshBtn, .weatherToggleBtn {
+  padding: .18rem .42rem;         /* קטן יותר */
+  border-radius: .45rem;
+  font-size: .78rem;              /* טקסט קטן */
+  border: 1px solid rgba(209,213,219,.9);
+  background: #fff;
+  color:#374151;
+  cursor: pointer;
+}
+.weatherRefreshBtn:disabled { opacity:.6; cursor:default; }
+
+/* פירוט מתקפל */
+.weatherDetailsGrid { margin-top:.6rem; display:grid; grid-template-columns:1fr 1fr; gap:.35rem .75rem; }
+.weatherDetailsGrid > div { display:flex; justify-content:space-between; gap:.5rem; }
+.weatherLabel { color:#6b7280; font-size:.9rem; }
+.weatherValue { color:#111827; font-weight:600; }
+
+/* התאמה לרוחב צר */
+@media (max-width: 900px) {
+  .headerRight .weatherCard { width: 300px; }
+  .weatherHero { grid-template-columns: 100px 1fr; }
+  .weatherIconXL, .weatherIconPlaceholder { width:76px; height:76px; }
+  .weatherTempBig { font-size:2.2rem; }
+}
+

@@ -1,66 +1,107 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./Todo.module.css";
 
-// --- Weather placeholder (UI מוכן ל־API חיצוני) ---
-function WeatherPanel({
-  location,
-  onChangeLocation,
-  activity,
-  onChangeActivity,
-  weather,
-  loading,
-}) {
+/* ===== לוגיקת המלצה ===== */
+function activityRecommendation(current) {
+  if (!current) return { label: "", level: "neutral" };
+  const t = current.temp_c;
+  const f = current.feelslike_c;
+  const hum = current.humidity;
+  const uv = current.uv || 0;
+  const precip = current.precip_mm || 0;
+
+  if (precip >= 1 || uv >= 9) return { label: "לא מומלץ לפעילות מאומצת בחוץ", level: "bad" };
+  if ((f || t) >= 36 || hum >= 75) return { label: "להליכה קצרה בלבד, לשתות הרבה", level: "warn" };
+  if (t >= 12 && t <= 24 && uv <= 7 && precip < 0.5 && hum <= 70)
+    return { label: "מצוין לריצה / רכיבה", level: "good" };
+  if (t >= 8 && t <= 28 && precip < 0.5)
+    return { label: "טוב לאימון חוץ קל / הליכה", level: "ok" };
+  return { label: "תנאים בינוניים — העדיפי אימון קצר", level: "neutral" };
+}
+
+function WeatherPanel({ locationLabel, weather, loading, onRefresh }) {
+  const cur = weather?.current || null;
+  const rec = activityRecommendation(cur);
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className={styles.weatherCard}>
-      <div className={styles.weatherHeader}>
-        <div className={styles.weatherTitle}>Weather helper (preview)</div>
-        <div className={styles.weatherBadge}>API pending</div>
+    <div className={`${styles.weatherCard} ${styles.weatherGlass}`}>
+      <div className={styles.weatherHero}>
+        {/* צד שמאל: אייקון גדול + מיקום */}
+        <div className={styles.weatherIconSide}>
+          {cur?.condition?.icon ? (
+            <img
+              src={`https:${cur.condition.icon}`}
+              alt={cur.condition?.text || "weather"}
+              className={styles.weatherIconXL}
+            />
+          ) : (
+            <div className={styles.weatherIconPlaceholder}>☁️</div>
+          )}
+          <div className={styles.weatherLocSmall}>{locationLabel || "Jerusalem, Israel"}</div>
+        </div>
+
+        {/* צד ימין: טמפ' גדולה + תיאור */}
+        <div className={styles.weatherMainCol}>
+          <div className={styles.weatherTempBig}>
+            {cur ? `${Math.round(cur.temp_c)}°C` : "—"}
+          </div>
+          <div className={styles.weatherCond}>
+            {cur?.condition?.text || "אין נתונים"}
+          </div>
+        </div>
+
+        {/* המלצה – יושבת על כל רוחב הגריד (שתי העמודות) ומתחת לאייקון */}
+        {rec.label && (
+          <div
+            className={`${styles.weatherRecoFull} ${
+              rec.level === "good" ? styles.recoGood :
+              rec.level === "ok"   ? styles.recoOk   :
+              rec.level === "warn" ? styles.recoWarn :
+              rec.level === "bad"  ? styles.recoBad  : styles.recoNeutral
+            }`}
+          >
+            {rec.label}
+          </div>
+        )}
       </div>
 
-      <div className={styles.weatherControls}>
-        <input
-          className={styles.weatherInput}
-          type="text"
-          placeholder="City / location (e.g., Jerusalem)"
-          value={location}
-          onChange={(e) => onChangeLocation(e.target.value)}
-        />
-        <select
-          className={styles.weatherSelect}
-          value={activity}
-          onChange={(e) => onChangeActivity(e.target.value)}
+      {/* כפתורים */}
+      <div className={styles.weatherActionsRow}>
+        <button className={styles.weatherRefreshBtn} onClick={onRefresh} disabled={loading}>
+          {loading ? "↻" : "↻"}
+        </button>
+        <button
+          className={styles.weatherToggleBtn}
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
         >
-          <option value="run">🏃‍♀️ Run</option>
-          <option value="walk">🚶‍♂️ Walk</option>
-          <option value="bike">🚴 Bike</option>
-          <option value="outdoor">🌤️ Outdoor Workout</option>
-        </select>
-        <button className={styles.weatherButton} disabled>
-          Connect API
+          {open ? "▲" : "▼"}
         </button>
       </div>
 
-      <div className={styles.weatherBody}>
-        <div className={styles.weatherRow}>
-          <span className={styles.weatherLabel}>Status</span>
-          <span className={styles.weatherValueMuted}>
-            Not connected — wire to your weather API when ready
-          </span>
+      {/* פרטים מתקפלים */}
+      {open && cur && (
+        <div className={styles.weatherDetailsGrid}>
+          <div><span className={styles.weatherLabel}>Feels like</span><span className={styles.weatherValue}>{Math.round(cur.feelslike_c)}°C</span></div>
+          <div><span className={styles.weatherLabel}>Humidity</span><span className={styles.weatherValue}>{cur.humidity}%</span></div>
+          <div><span className={styles.weatherLabel}>UV</span><span className={styles.weatherValue}>{cur.uv ?? "—"}</span></div>
+          <div><span className={styles.weatherLabel}>Precip</span><span className={styles.weatherValue}>{cur.precip_mm} mm</span></div>
+          <div><span className={styles.weatherLabel}>Cloud</span><span className={styles.weatherValue}>{cur.cloud}%</span></div>
+          <div><span className={styles.weatherLabel}>Dew Point</span><span className={styles.weatherValue}>{cur.dewpoint_c != null ? `${Math.round(cur.dewpoint_c)}°C` : "—"}</span></div>
+          <div><span className={styles.weatherLabel}>Pressure</span><span className={styles.weatherValue}>{cur.pressure_mb} mb</span></div>
+          <div><span className={styles.weatherLabel}>Updated</span><span className={styles.weatherValue}>{cur.last_updated || "—"}</span></div>
         </div>
-        <div className={styles.weatherRow}>
-          <span className={styles.weatherLabel}>Tip</span>
-          <span className={styles.weatherValueMuted}>
-            After connecting, show temp, wind, humidity, rain chance, and a
-            “Is it good for {activity}?“ verdict.
-          </span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
 
+
+
+/* ================== Todos Page ================== */
 function Todos() {
-  // --- auth מתוך localStorage ---
+  // auth נשמר כ- { token, user } ב-localStorage.auth
   const auth = JSON.parse(localStorage.getItem("auth"));
   const token = auth?.token;
   const user = auth?.user;
@@ -73,7 +114,7 @@ function Todos() {
   const [filter, setFilter] = useState({
     text: "",
     completed: "all", // "all" | "true" | "false"
-    type: "all", // "all" | "personal" | "challenge"
+    type: "all",      // "all" | "personal" | "challenge"
   });
   const [sortBy, setSortBy] = useState("title"); // "title" | "status" | "id"
 
@@ -86,23 +127,22 @@ function Todos() {
   const [editedTodoTitle, setEditedTodoTitle] = useState("");
   const [isSavingTodo, setIsSavingTodo] = useState(false);
 
-  // weather placeholder state
-  const [weatherLoc, setWeatherLoc] = useState("Jerusalem");
-  const [weatherActivity, setWeatherActivity] = useState("run");
+  // weather
+  const [profileCityLabel, setProfileCityLabel] = useState("");
   const [weatherData, setWeatherData] = useState(null);
-  const [weatherLoading] = useState(false);
+  const [weatherLoading, setWeatherLoading] = useState(false);
 
   const hasRun = useRef(false);
 
-  // טעינת TODOS מהשרת
+  /* ---- טעינת TODOS מהשרת (גרסה אחידה — רק השרת שלך) ---- */
   useEffect(() => {
     if (!user || !token) return;
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const load = async () => {
+    (async () => {
       try {
-        const res = await fetch(`http://localhost:5000/todos`, {
+        const res = await fetch("http://localhost:5000/todos", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(`Failed to load todos (${res.status})`);
@@ -114,15 +154,79 @@ function Todos() {
         setError(e.message || "Failed to load todos");
         setLoaded(true);
       }
-    };
-    load();
+    })();
   }, [user, token]);
 
+  /* ---- טעינת פרופיל (לתיוג מיקום) ---- */
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("http://localhost:5000/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!r.ok) throw new Error(`getMyProfile failed (${r.status})`);
+        const j = await r.json();
+        const me = j.user;
+        const label =
+          (me?.city && me.city.trim()) ||
+          (me?.geo_lat && me?.geo_lng
+            ? `${Number(me.geo_lat).toFixed(4)}, ${Number(me.geo_lng).toFixed(4)}`
+            : "Jerusalem, Israel");
+        if (!cancelled) setProfileCityLabel(label);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setProfileCityLabel("Jerusalem, Israel");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  /* ---- טעינת מזג אוויר מהשרת שלך ---- */
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      setWeatherLoading(true);
+      try {
+        const res = await fetch("http://localhost:5000/weather/current/by-user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`Weather fetch failed (${res.status})`);
+        const data = await res.json();
+        if (!cancelled) setWeatherData(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (!cancelled) setWeatherLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  async function refreshWeatherFromProfile() {
+    setWeatherLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/weather/current/by-user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Weather fetch failed (${res.status})`);
+      const data = await res.json();
+      setWeatherData(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setWeatherLoading(false);
+    }
+  }
+
+  /* ---------------- פעולות TODOS ---------------- */
   const handleAddTodo = async () => {
     if (!newTodoTitle.trim()) return;
     setIsAddingTodo(true);
     try {
-      const res = await fetch(`http://localhost:5000/todos`, {
+      const res = await fetch("http://localhost:5000/todos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,7 +258,7 @@ function Todos() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed to delete todo");
+      if (!res.ok && res.status !== 204) throw new Error("Failed to delete todo");
       setTodos((prev) => prev.filter((t) => t.id !== id));
       if (editingTodoId === id) {
         setEditingTodoId(null);
@@ -171,7 +275,7 @@ function Todos() {
     if (!todo) return;
 
     const body = todo.challengeId
-      ? { completed: !todo.completed }
+      ? { completed: !todo.completed } // אצלך: משימת אתגר — רק completed
       : { title: todo.title, completed: !todo.completed };
 
     try {
@@ -184,7 +288,6 @@ function Todos() {
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Update failed");
-
       setTodos((prev) =>
         prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
       );
@@ -239,6 +342,7 @@ function Todos() {
     }
   };
 
+  /* ---- פילטור/מיון ---- */
   const filteredTodos = useMemo(() => {
     let arr = [...todos];
 
@@ -274,7 +378,6 @@ function Todos() {
 
   return (
     <div className={styles.todoContainer}>
-      {/* רקע דקורטיבי */}
       <div className={styles.backgroundElements}>
         <div className={`${styles.bgElement} ${styles.bgElement1}`} />
         <div className={`${styles.bgElement} ${styles.bgElement2}`} />
@@ -282,37 +385,40 @@ function Todos() {
       </div>
 
       <div className={styles.content}>
-        {/* כותרת + סטטיסטיקות */}
-        <div className={styles.header}>
-          <div className={styles.titleGroup}>
-            <div className={styles.iconWrapper}><span className={styles.sparkleIcon}>🏋️‍♀️</span></div>
-            <h1 className={styles.mainTitle}>Tasks Dashboard</h1>
-          </div>
+        {/* Header + Weather side-by-side */}
+        <div className={styles.headerRow}>
+          <div className={styles.headerLeft}>
+            <div className={styles.header}>
+              <div className={styles.titleGroup}>
+                <div className={styles.iconWrapper}><span className={styles.sparkleIcon}>🏋️‍♀️</span></div>
+                <h1 className={styles.mainTitle}>Tasks Dashboard</h1>
+              </div>
 
-          <div className={styles.statsContainer}>
-            <div className={styles.stat}><div className={styles.statNumber}>{completedCount}</div><div className={styles.statLabel}>Completed</div></div>
-            <div className={styles.statDivider}></div>
-            <div className={styles.stat}><div className={styles.statNumber}>{totalCount - completedCount}</div><div className={styles.statLabel}>Active</div></div>
-            <div className={styles.statDivider}></div>
-            <div className={styles.stat}><div className={styles.statNumber}>{completionPercentage}%</div><div className={styles.statLabel}>Progress</div></div>
-          </div>
+              <div className={styles.statsContainer}>
+                <div className={styles.stat}><div className={styles.statNumber}>{completedCount}</div><div className={styles.statLabel}>Completed</div></div>
+                <div className={styles.statDivider}></div>
+                <div className={styles.stat}><div className={styles.statNumber}>{totalCount - completedCount}</div><div className={styles.statLabel}>Active</div></div>
+                <div className={styles.statDivider}></div>
+                <div className={styles.stat}><div className={styles.statNumber}>{completionPercentage}%</div><div className={styles.statLabel}>Progress</div></div>
+              </div>
 
-          <div className={styles.progressBarContainer}>
-            <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: `${completionPercentage}%` }} />
+              <div className={styles.progressBarContainer}>
+                <div className={styles.progressBar}>
+                  <div className={styles.progressFill} style={{ width: `${completionPercentage}%` }} />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Weather helper (UI בלבד בשלב זה) */}
-        <WeatherPanel
-          location={weatherLoc}
-          onChangeLocation={setWeatherLoc}
-          activity={weatherActivity}
-          onChangeActivity={setWeatherActivity}
-          weather={weatherData}
-          loading={weatherLoading}
-        />
+          <div className={styles.headerRight}>
+            <WeatherPanel
+              locationLabel={profileCityLabel}
+              weather={weatherData}
+              loading={weatherLoading}
+              onRefresh={refreshWeatherFromProfile}
+            />
+          </div>
+        </div>
 
         {/* הוספת משימה אישית */}
         <div className={styles.addTodoSection}>
@@ -481,15 +587,14 @@ function Todos() {
                       ) : (
                         <>
                           <button
-                          onClick={() => handleEditTodo(todo.id)}
-                          className={styles.editButton}
-                          title={isChallenge ? "Title editing disabled for challenge tasks" : "Edit title"}
-                          disabled={isChallenge || editingTodoId !== null}
-                            >
-                              ✏️
-                            </button>
+                            onClick={() => handleEditTodo(todo.id)}
+                            className={styles.editButton}
+                            title={isChallenge ? "Title editing disabled for challenge tasks" : "Edit title"}
+                            disabled={isChallenge || editingTodoId !== null}
+                          >
+                            ✏️
+                          </button>
 
-                            
                           <button
                             onClick={() => handleDelete(todo.id)}
                             className={styles.deleteButton}

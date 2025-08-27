@@ -11,6 +11,7 @@ const todoRoutes = require('./routes/todos');
 const postRoutes = require('./routes/posts');
 const commentRoutes = require('./routes/comments');
 const challengeRoutes = require('./routes/challenges');
+const weatherRoutes = require("./routes/weather");
 
 // מידלוורים
 app.use(cors());
@@ -22,7 +23,8 @@ app.use('/users', userRoutes);
 app.use('/todos', todoRoutes);                  
 app.use('/posts', postRoutes);                  
 app.use('/posts/:postId/comments', commentRoutes); 
-app.use('/challenges', challengeRoutes);        
+app.use('/challenges', challengeRoutes);  
+app.use("/weather", weatherRoutes);      
 
 // ברירת מחדל
 app.get('/', (req, res) => {
