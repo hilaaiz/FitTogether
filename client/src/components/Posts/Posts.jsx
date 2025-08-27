@@ -16,11 +16,14 @@ function Posts() {
     const [filter, setFilter] = useState({ text: "", sortBy: "id" });
     const [newCommentText, setNewCommentText] = useState("");
     const [loaded, setLoaded] = useState(false);
+
+    // 👇 מה שהיה חסר
     const [commentsLoaded, setCommentsLoaded] = useState(false);
+
     const [isAddingPost, setIsAddingPost] = useState(false);
     const [isAddingComment, setIsAddingComment] = useState(false);
 
-    // מצבי עריכה
+    // עריכה
     const [isEditingPost, setIsEditingPost] = useState(false);
     const [editedPost, setEditedPost] = useState({ title: "", body: "" });
     const [isSavingPost, setIsSavingPost] = useState(false);
@@ -39,24 +42,36 @@ function Posts() {
                 .then(async (res) => {
                     if (!res.ok) throw new Error(`Failed: ${res.status}`);
                     const data = await res.json();
-                    if (Array.isArray(data)) {
-                        setPosts(data);
-                    } else {
-                        setPosts([]);
-                    }
+                    setPosts(Array.isArray(data) ? data : []);
                     setLoaded(true);
 
-                    if (id && data.find((post) => post.id == id)) {
+                    if (id && data.find((post) => post.id === id)) {
                         setSelectedPostId(id);
+                        loadComments(id);
                     }
                 })
                 .catch((err) => {
                     console.error("Error loading posts", err);
-                    setPosts([]);
                     setLoaded(true);
                 });
         }
     }, [auth, id]);
+
+    // --- טעינת תגובות ---
+    const loadComments = async (postId) => {
+        try {
+            const res = await fetch(`${API}/posts/${postId}/comments`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(Array.isArray(data) ? data : []);
+                setCommentsLoaded(true);
+            }
+        } catch (err) {
+            console.error("Error loading comments:", err);
+        }
+    };
 
     // --- יצירת פוסט ---
     const handleAddPost = async () => {
@@ -72,7 +87,6 @@ function Posts() {
                 },
                 body: JSON.stringify(newPost),
             });
-
             if (res.ok) {
                 const data = await res.json();
                 setPosts((prev) => [...prev, data]);
@@ -90,53 +104,17 @@ function Posts() {
         if (post.userId !== auth.user.id && auth.user.role !== "coach") {
             return alert("You can delete only your own posts (unless coach).");
         }
-
         try {
             const res = await fetch(`${API}/posts/${post.id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${auth.token}` },
             });
-
             if (res.ok) {
                 setPosts((prev) => prev.filter((p) => p.id !== post.id));
                 if (selectedPostId === post.id) handleCloseModal();
             }
         } catch (err) {
             console.error("Error deleting post:", err);
-        }
-    };
-
-    // --- בחירת פוסט להצגה ---
-    const handleSelectPost = (id) => {
-        setSelectedPostId(id);
-        setComments([]);
-        setCommentsLoaded(false);
-        setNewCommentText("");
-        window.history.pushState(null, "", `/posts/${id}`);
-    };
-
-    const handleCloseModal = () => {
-        setSelectedPostId(null);
-        setComments([]);
-        setCommentsLoaded(false);
-        setNewCommentText("");
-        window.history.pushState(null, "", "/posts");
-    };
-
-    // --- טעינת תגובות ---
-    const loadComments = async (postId) => {
-        if (commentsLoaded && selectedPostId === postId) return;
-        try {
-            const res = await fetch(`${API}/posts/${postId}/comments`, {
-                headers: { Authorization: `Bearer ${auth.token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setComments(Array.isArray(data) ? data : []);
-                setCommentsLoaded(true);
-            }
-        } catch (err) {
-            console.error("Error loading comments:", err);
         }
     };
 
@@ -154,10 +132,8 @@ function Posts() {
                 },
                 body: JSON.stringify({ body: newCommentText }),
             });
-
             if (res.ok) {
-                const data = await res.json();
-                setComments((prev) => [...prev, data]);
+                await loadComments(selectedPostId); // ✅ טוען מחדש
                 setNewCommentText("");
             }
         } catch (err) {
@@ -167,42 +143,35 @@ function Posts() {
         }
     };
 
-    // --- מחיקת תגובה ---
-    const handleDeleteComment = async (comment) => {
-        if (comment.userId !== auth.user.id && auth.user.role !== "coach") {
-            return alert("You can delete only your own comments (unless coach).");
-        }
+    // --- בחירת פוסט ---
+    const handleSelectPost = (id) => {
+        setSelectedPostId(id);
+        setComments([]);
+        setCommentsLoaded(false);
+        loadComments(id);
+        window.history.pushState(null, "", `/posts/${id}`);
+    };
 
-        try {
-            const res = await fetch(
-                `${API}/posts/${selectedPostId}/comments/${comment.id}`,
-                {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${auth.token}` },
-                }
-            );
-
-            if (res.ok) {
-                setComments((prev) => prev.filter((c) => c.id !== comment.id));
-            }
-        } catch (err) {
-            console.error("Error deleting comment:", err);
-        }
+    const handleCloseModal = () => {
+        setSelectedPostId(null);
+        setComments([]);
+        setCommentsLoaded(false);
+        setNewCommentText("");
+        window.history.pushState(null, "", "/posts");
     };
 
     // --- עריכת פוסט ---
     const handleEditPost = () => {
         const post = posts.find((p) => p.id === selectedPostId);
-        if (!post) return;
-        setEditedPost({ title: post.title, body: post.body });
-        setIsEditingPost(true);
+        if (post) {
+            setEditedPost({ title: post.title, body: post.body });
+            setIsEditingPost(true);
+        }
     };
-
     const handleCancelEdit = () => {
         setIsEditingPost(false);
         setEditedPost({ title: "", body: "" });
     };
-
     const handleSavePost = async () => {
         if (!editedPost.title.trim() || !editedPost.body.trim()) return;
         setIsSavingPost(true);
@@ -216,7 +185,6 @@ function Posts() {
                 },
                 body: JSON.stringify(editedPost),
             });
-
             if (res.ok) {
                 setPosts((prev) =>
                     prev.map((p) =>
@@ -232,28 +200,22 @@ function Posts() {
         }
     };
 
-    // --- סינון ומיון פוסטים ---
-    const filteredPosts = Array.isArray(posts)
-        ? posts
-            .filter((p) => {
-                if (filter.text === "") return true;
-                const searchText = filter.text.toLowerCase();
-                return (
-                    p.title.toLowerCase().includes(searchText) ||
-                    p.id.toString().toLowerCase().includes(searchText)
-                );
-            })
-            .sort((a, b) => {
-                if (filter.sortBy === "id") return a.id.localeCompare(b.id);
-                if (filter.sortBy === "title") return a.title.localeCompare(b.title);
-                return 0;
-            })
-        : [];
+    // --- סינון פוסטים ---
+    const filteredPosts = posts
+        .filter((p) =>
+            filter.text === ""
+                ? true
+                : p.title.toLowerCase().includes(filter.text.toLowerCase())
+        )
+        .sort((a, b) =>
+            filter.sortBy === "id"
+                ? a.id.localeCompare(b.id)
+                : a.title.localeCompare(b.title)
+        );
 
     if (!auth.user) return <div className={styles.noUser}>No user found.</div>;
 
     const selectedPost = posts.find((p) => p.id === selectedPostId);
-
     return (
         <div className={styles.postsContainer}>
             {/* Animated background elements */}
@@ -529,27 +491,21 @@ function Posts() {
                                             comments.map((comment, index) => (
                                                 <div
                                                     key={comment.id}
-                                                    className={`${styles.commentItem} ${comment.email === user.email ? styles.ownComment : ''}`}
+                                                    className={`${styles.commentItem} ${comment.userId === auth.user.id ? styles.ownComment : ""
+                                                        }`}
                                                     style={{ animationDelay: `${index * 30}ms` }}
                                                 >
                                                     <div className={styles.commentHeader}>
                                                         <span className={styles.commentId}>#{comment.id}</span>
-                                                        <span className={styles.commentAuthor}>{comment.name}</span>
-                                                        {comment.email === user.email && (
+                                                        <span className={styles.commentAuthor}>{comment.username}</span>
+                                                        {comment.userId === auth.user.id && (
                                                             <span className={styles.ownBadge}>You</span>
                                                         )}
                                                     </div>
 
                                                     <div className={styles.commentContent}>
-                                                        <input
-                                                            type="text"
-                                                            value={comment.body}
-                                                            onChange={(e) => handleEditComment(comment.id, e.target.value)}
-                                                            disabled={comment.email !== user.email}
-                                                            readOnly={comment.email !== user.email}
-                                                            className={`${styles.commentText} ${comment.email !== user.email ? styles.readonly : ''}`}
-                                                        />
-                                                        {comment.email === user.email && (
+                                                        <div className={styles.commentText}>{comment.body}</div>
+                                                        {comment.userId === auth.user.id && (
                                                             <button
                                                                 className={styles.deleteCommentButton}
                                                                 onClick={() => handleDeleteComment(comment.id)}

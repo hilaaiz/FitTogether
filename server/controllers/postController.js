@@ -17,6 +17,25 @@ exports.getAllPosts = async (req, res) => {
   }
 };
 
+// קבלת פוסט לפי ID
+exports.getPostById = async (req, res) => {
+  const { postId } = req.params;
+  try {
+    const [rows] = await db.query(
+      `SELECT posts.*, users.username, users.role 
+       FROM posts 
+       JOIN users ON posts.userId = users.id
+       WHERE posts.id = ?`,
+      [postId]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Post not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Error in getPostById:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // קבלת הפוסטים של המשתמש המחובר בלבד
 exports.getMyPosts = async (req, res) => {
   const userId = req.user.id;
@@ -43,13 +62,13 @@ exports.createPost = async (req, res) => {
       'INSERT INTO posts (id, title, body, image_url, userId) VALUES (?, ?, ?, ?, ?)',
       [postId, title, body, image_url || null, userId]
     );
-    
-    res.status(201).json({ 
-      id: postId, 
-      title, 
-      body, 
-      image_url, 
-      userId 
+
+    res.status(201).json({
+      id: postId,
+      title,
+      body,
+      image_url,
+      userId
     });
   } catch (err) {
     console.error('Error in createPost:', err);
@@ -57,12 +76,11 @@ exports.createPost = async (req, res) => {
   }
 };
 
-
 // עדכון פוסט (רק בעל הפוסט)
 exports.updatePost = async (req, res) => {
   const userId = req.user.id;
   const { postId } = req.params;
-  const { title, body, image_url } = req.body; // ✅ שינוי לשם DB
+  const { title, body, image_url } = req.body;
 
   try {
     const [posts] = await db.query('SELECT * FROM posts WHERE id=?', [postId]);
@@ -75,7 +93,7 @@ exports.updatePost = async (req, res) => {
 
     await db.query(
       'UPDATE posts SET title=?, body=?, image_url=? WHERE id=?',
-      [title || post.title, body || post.body, image_url || post.image_url, postId] // ✅ שימוש ב־image_url
+      [title || post.title, body || post.body, image_url || post.image_url, postId]
     );
 
     res.json({ message: 'Post updated', postId });
