@@ -44,14 +44,38 @@ form h1 {
   border-color: #1f1f1f;
 }
 
+.inputBox {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.inputBox input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem; /* ריווח משמאל לאייקון */
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* חשוב! */
+}
+
+.inputBox input:focus {
+  border-color: #1f1f1f;
+}
+
 .icon {
   position: absolute;
-  right: 0.75rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: #6c757d;
   font-size: 1.1rem;
+  pointer-events: none; /* שלא יפריע ללחוץ בתוך השדה */
 }
+
 
 .btn {
   width: 100%;

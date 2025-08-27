@@ -3,11 +3,14 @@ import styles from "./Register.module.css";
 import { Link, useNavigate } from "react-router-dom";
 import useLocalStorage from "../../useLocalStorage";
 
+// Icons
+import { FaUser, FaEnvelope, FaCity, FaHome, FaRulerVertical, FaWeight, FaHashtag } from "react-icons/fa";
+import { RiLockPasswordFill } from "react-icons/ri";
+
 const API = "http://localhost:5000";
 
 function Register() {
   const [step, setStep] = useState(1);
-
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -19,66 +22,47 @@ function Register() {
     zipcode: "",
     height: "",
     weight: "",
-    role: "user", // ברירת מחדל: user
+    role: "user",
   });
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // נשמור את ה־token + user ביחד ב־localStorage
   const [, setAuth] = useLocalStorage("auth", { token: null, user: null });
 
-  // --- שלב 1: בדיקת זמינות username/email ---
   const handleCheck = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
       const res = await fetch(`${API}/auth/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-        }),
+        body: JSON.stringify({ username: formData.username, email: formData.email }),
       });
-
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Check failed");
       }
-
-      // אם פנוי → מעבר לשלב 2
       setStep(2);
     } catch (err) {
       setError(err.message);
     }
   };
 
-  // --- שלב 2: הרשמה מלאה ---
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
       const res = await fetch(`${API}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Registration failed");
       }
-
-      // כאן השרת מחזיר token + user
       const { token, user } = await res.json();
-
-      // שמירה ב־localStorage
       setAuth({ token, user });
-
-      // מעבר ל־home (כי מזהים user דרך JWT ולא דרך :id בנתיב)
       navigate("/home", { replace: true });
     } catch (err) {
       setError(err.message);
@@ -93,133 +77,133 @@ function Register() {
 
           {step === 1 && (
             <>
-              <div className={styles.inputGroup}>
+              <div className={styles.inputBox}>
                 <input
                   type="text"
                   placeholder="Username"
                   required
                   value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 />
+                <FaUser className={styles.icon} />
               </div>
-              <div className={styles.inputGroup}>
+
+              <div className={styles.inputBox}>
                 <input
                   type="email"
                   placeholder="Email"
                   required
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
+                <FaEnvelope className={styles.icon} />
               </div>
-              <div className={styles.inputGroup}>
+
+              <div className={styles.inputBox}>
                 <input
                   type="password"
                   placeholder="Password"
                   required
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
+                <RiLockPasswordFill className={styles.icon} />
               </div>
-              <div className={styles.inputGroup}>
+
+              <div className={styles.inputBox}>
                 <input
                   type="password"
                   placeholder="Verify Password"
                   required
                   value={formData.verifyPassword}
-                  onChange={(e) =>
-                    setFormData({ ...formData, verifyPassword: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, verifyPassword: e.target.value })}
                 />
+                <RiLockPasswordFill className={styles.icon} />
               </div>
             </>
           )}
 
           {step === 2 && (
             <>
-              <div className={styles.inputGroup}>
+              <div className={styles.inputBox}>
                 <input
                   type="text"
                   placeholder="Full Name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                <FaUser className={styles.icon} />
               </div>
 
               <div className={styles.row}>
                 <div className={styles.halfInput}>
-                  <input
-                    type="text"
-                    placeholder="Street"
-                    value={formData.street}
-                    onChange={(e) =>
-                      setFormData({ ...formData, street: e.target.value })
-                    }
-                  />
+                  <div className={styles.inputBox}>
+                    <input
+                      type="text"
+                      placeholder="Street"
+                      value={formData.street}
+                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                    />
+                    <FaHome className={styles.icon} />
+                  </div>
                 </div>
                 <div className={styles.halfInput}>
-                  <input
-                    type="text"
-                    placeholder="City"
-                    value={formData.city}
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
-                    }
-                  />
+                  <div className={styles.inputBox}>
+                    <input
+                      type="text"
+                      placeholder="City"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    />
+                    <FaCity className={styles.icon} />
+                  </div>
                 </div>
               </div>
 
               <div className={styles.row}>
                 <div className={styles.halfInput}>
-                  <input
-                    type="text"
-                    placeholder="Zipcode"
-                    value={formData.zipcode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, zipcode: e.target.value })
-                    }
-                  />
+                  <div className={styles.inputBox}>
+                    <input
+                      type="text"
+                      placeholder="Zipcode"
+                      value={formData.zipcode}
+                      onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
+                    />
+                    <FaHashtag className={styles.icon} />
+                  </div>
                 </div>
                 <div className={styles.halfInput}>
-                  <input
-                    type="number"
-                    placeholder="Height (cm)"
-                    value={formData.height}
-                    onChange={(e) =>
-                      setFormData({ ...formData, height: e.target.value })
-                    }
-                  />
+                  <div className={styles.inputBox}>
+                    <input
+                      type="number"
+                      placeholder="Height (cm)"
+                      value={formData.height}
+                      onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                    />
+                    <FaRulerVertical className={styles.icon} />
+                  </div>
                 </div>
               </div>
 
-              <div className={styles.inputGroup}>
+              <div className={styles.inputBox}>
                 <input
                   type="number"
                   placeholder="Weight (kg)"
                   value={formData.weight}
-                  onChange={(e) =>
-                    setFormData({ ...formData, weight: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                 />
+                <FaWeight className={styles.icon} />
               </div>
 
-              <div className={styles.inputGroup}>
+              <div className={styles.inputBox}>
                 <select
                   value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 >
                   <option value="user">User</option>
                   <option value="coach">Coach</option>
                 </select>
+                <FaUser className={styles.icon} />
               </div>
             </>
           )}
