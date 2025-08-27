@@ -33,23 +33,30 @@ exports.getMyPosts = async (req, res) => {
   }
 };
 
-// יצירת פוסט חדש
 exports.createPost = async (req, res) => {
   const userId = req.user.id;
-  const { title, body, image_url } = req.body; // ✅ שינוי לשם DB
+  const { title, body, image_url } = req.body;
   const postId = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 
   try {
     await db.query(
       'INSERT INTO posts (id, title, body, image_url, userId) VALUES (?, ?, ?, ?, ?)',
-      [postId, title, body, image_url || null, userId] // ✅ שימוש ב־image_url
+      [postId, title, body, image_url || null, userId]
     );
-    res.status(201).json({ postId, title, body, image_url, userId });
+    
+    res.status(201).json({ 
+      id: postId, 
+      title, 
+      body, 
+      image_url, 
+      userId 
+    });
   } catch (err) {
     console.error('Error in createPost:', err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // עדכון פוסט (רק בעל הפוסט)
 exports.updatePost = async (req, res) => {
