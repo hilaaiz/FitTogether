@@ -9,6 +9,9 @@ router.use(authenticateToken);
 // קבלת כל הפוסטים
 router.get('/', postController.getAllPosts);
 
+// קבלת פוסט בודד לפי ID
+router.get('/:postId', postController.getPostById);
+
 // יצירת פוסט חדש
 router.post('/', postController.createPost);
 
