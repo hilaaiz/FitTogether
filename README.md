@@ -1,4 +1,3 @@
-# FitTogether
 # FitTogether 🏋️‍♀️💪
 
 **FitTogether** is a web-based fitness application that combines **group fitness challenges**, **personal task management**, and **social features** – creating a community-driven and motivating fitness experience.
