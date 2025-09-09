@@ -46,7 +46,7 @@ FitTogether follows a **modern three-tier architecture**:
 - **RBAC (Role-Based Access Control)** – Permissions tied to the `role` field in the `users` table.
 
 **Login Flow Diagram:**  
-![Login Sequence Diagram](./docs/SequenceDiagramLoging.jpg)
+![Login Sequence Diagram](./docs/SequenceDiagramLogin.jpg)
 
 ---
 
