@@ -15,7 +15,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 **FitTogether** is a web-based fitness application that combines **group fitness challenges**, **personal task management**, and **social features** – creating a community-driven and motivating fitness experience.
 
----
+
 
 ## 🚀 Purpose and Features
 
@@ -27,7 +27,7 @@ If you are developing a production application, we recommend using TypeScript wi
   - **User**: join challenges, manage tasks, create posts, comment.
   - **Coach**: all user capabilities + create/manage challenges and participants.
 
----
+
 
 ## 🏗 Architecture
 
@@ -37,7 +37,7 @@ FitTogether follows a **modern three-tier architecture**:
 2. **Backend** – RESTful API handling authentication and DB access.
 3. **Database** – MySQL (`fullstack7_db`) with relational schema for users, challenges, tasks, and social features.
 
----
+
 
 ## 🔐 Authentication & User Management
 
@@ -48,7 +48,7 @@ FitTogether follows a **modern three-tier architecture**:
 **Login Flow Diagram:**  
 ![Login Sequence Diagram](/docs/SequenceDiagramLogin.jpg)
 
----
+
 
 ## ⚙️ Technology Stack
 
@@ -68,7 +68,7 @@ FitTogether follows a **modern three-tier architecture**:
 - **MySQL** (`fullstack7_db`) – Core relational database.
 - **SQL Scripts** – `create tables.sql` for schema setup.
 
----
+
 
 ## 🗄 Data Model Highlights
 
@@ -77,7 +77,7 @@ FitTogether follows a **modern three-tier architecture**:
 - **Todos** – Personal or challenge-related tasks.
 - **Posts & Comments** – Social content hierarchy.
 
----
+
 
 ## 📊 Dashboard & UI Components
 
@@ -86,7 +86,7 @@ FitTogether follows a **modern three-tier architecture**:
 - **Challenges** 🏆 – Join group challenges.
 - **User Profile** 👤 – View and edit profile information.
 
----
+
 
 ## 📂 Project Structure (High-Level)
 FitTogether/
@@ -95,7 +95,7 @@ FitTogether/
 │── DB/             # MySQL schema & scripts
 │── docs/           # Architecture and feature documentation
 
----
+
 
 ## 🧑‍💻 Project Contributions & Skills Demonstrated
 
@@ -106,7 +106,7 @@ FitTogether/
 - Frontend best practices: **ESLint**, component-based design, **React Router**.
 - Integration of **weather-based recommendations** for a dynamic UX.
 
----
+
 
 ## ▶️ Local Setup & Run
 
